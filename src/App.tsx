@@ -55,7 +55,7 @@ const router = createBrowserRouter([
         element: <Archives />,
       },
       {
-        path: "staffs",
+        path: "staffs/*",
         element: <Staffs />,
       },
       {
