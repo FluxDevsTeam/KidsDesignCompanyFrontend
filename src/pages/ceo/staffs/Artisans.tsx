@@ -1,4 +1,5 @@
 import {FiFilter} from 'react-icons/fi';
+import dot from './img/dots.png'
 
 const Artisans = () => {
   return (
@@ -16,40 +17,53 @@ const Artisans = () => {
         <thead>
           <tr>
             <th className="text-center py-4 px-2 border border-gray-300">Artisan ID</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Project ID</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Project</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Status</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Start Date</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Action</th>
+            <th className="py-4 px-2 border border-gray-300 text-center font-[500]">Project ID</th>
+            <th className="py-4 px-2 border border-gray-300 text-center font-[500]">Project</th>
+            <th className="py-4 px-2 border border-gray-300 text-center font-[500]">Status</th>
+            <th className="py-4 px-2 border border-gray-300 text-center font-[500]">Start Date</th>
+            <th className="py-4 px-2 border border-gray-300 text-center font-[500]">Action</th>
           </tr>
         </thead>
-        <tbody>
+
+        <tbody className='text-[14px] leading-[18px]'>
           <tr>
-            <td className="text-center py-4 px-2 border border-gray-300">No. 0045</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">551423</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">View</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">
-              <span></span>
-              <span>In Progress</span></td>
-            <td className="py-4 px-2 border border-gray-300 text-left">11/12/23</td>
+            <td className="text-center py-4 px-2 border border-gray-300">
+              <span className='bg-[#C6F7E9] px-2 py-1'>No. 0045</span>
+            </td>
+            <td className="py-4 px-2 border border-gray-300 text-center">551423</td>
+            <td className="py-4 px-2 border border-gray-300 text-center">
+              <span className='border border-black-600 rounded-2xl px-6 py-1'>View</span>
+            </td>
+            <td className="py-4 px-2 border border-gray-300 flex justify-center items-center gap-4 h-[100%]">
+              <span className='block bg-green-910 w-4 h-4 rounded-full'></span>
+              <span className=''>In Progress</span></td>
+            <td className="py-4 px-2 border border-gray-300 text-center">11/12/23</td>
+            <td className="py-4 px-2 border border-gray-300 text-center"><img src={dot} /></td>
+          </tr>
+          
+          <tr>
+            <td className="text-center py-4 px-2 border border-gray-300">
+              <span className='bg-[#c9869f] px-2 py-1'>No. 0045</span>
+            </td>
+            <td className="py-4 px-2 border border-gray-300 text-center">551423</td>
+            <td className="py-4 px-2 border border-gray-300 text-center">
+              <span className='border border-black-600 rounded-2xl px-6 py-1'>View</span>
+            </td>
+            <td className="py-4 px-2 border border-gray-300 text-center flex justify-center items-center gap-4">
+              <span className='block bg-red-950 w-4 h-4 rounded-full'></span>
+              <span>Cancelled</span></td>
+            <td className="py-4 px-2 border border-gray-300 text-center">11/12/23</td>
+            <td className="py-4 px-2 border border-gray-300 text-center"><img src={dot} /></td>
           </tr>
           <tr>
             <td className="text-center py-4 px-2 border border-gray-300">No. 0045</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">551423</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">View</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">
+            <td className="py-4 px-2 border border-gray-300 text-center">551423</td>
+            <td className="py-4 px-2 border border-gray-300 text-center">View</td>
+            <td className="py-4 px-2 border border-gray-300 text-center">
               <span></span>
-              <span>In Progress</span></td>
-            <td className="py-4 px-2 border border-gray-300 text-left">11/12/23</td>
-          </tr>
-          <tr>
-            <td className="text-center py-4 px-2 border border-gray-300">No. 0045</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">551423</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">View</td>
-            <td className="py-4 px-2 border border-gray-300 text-left">
-              <span></span>
-              <span>In Progress</span></td>
-            <td className="py-4 px-2 border border-gray-300 text-left">11/12/23</td>
+              <span>Cancelled</span></td>
+            <td className="py-4 px-2 border border-gray-300 text-center">11/12/23</td>
+            <td className="py-4 px-2 border border-gray-300 text-center"><img src={dot} /></td>
           </tr>
         </tbody>
       </table>

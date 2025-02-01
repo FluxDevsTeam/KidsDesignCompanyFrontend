@@ -1,3 +1,5 @@
+import track from './img/track.png'
+
 const StoreKeeper = () => {
   return (
     <div>
@@ -9,17 +11,26 @@ const StoreKeeper = () => {
         <button className="text-yellow-600 mb-8">+ Add Project</button>
         <div className="flex justify-between items-center mb-28">
             <div>
-                <h4 className="text-[#0178A3] font-bold text-[22px]">Total Project</h4>
+                <div className="flex justify-between items-center w-[200px]">
+                    <h4 className="text-[#0178A3] font-bold text-[22px]">Total Project</h4>
+                    <img src={track} className='h-[18px]' />
+                </div>
                 <span className="font-extrabold text-[28px] block mb-3">55</span>
                 <span className="text-[10px]">70% progress on project completion</span>
             </div>
             <div>
-                <h4 className="text-[#0178A3] font-bold text-[22px]">Active Project</h4>
+                <div className="flex justify-between items-center w-[200px]">
+                    <h4 className="text-[#0178A3] font-bold text-[22px]">Active Project</h4>
+                    <img src={track} className='h-[18px]' />
+                </div>
                 <span className="font-extrabold text-[28px] block mb-3">40</span>
                 <span className="text-[10px]">70% progress on project completion</span>
             </div>
             <div>
-                <h4 className="text-[#0178A3] font-bold text-[22px]">Rejected</h4>
+            <div className="flex justify-between items-center w-[200px]">
+                    <h4 className="text-[#0178A3] font-bold text-[22px]">Rejected</h4>
+                    <img src={track} className='h-[18px]' />
+                </div>
                 <span className="font-extrabold text-[28px] block mb-3">7</span>
                 <span className="text-[10px]">70% progress on project completion</span>
             </div>
