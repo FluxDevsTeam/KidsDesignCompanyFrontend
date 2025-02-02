@@ -43,7 +43,7 @@ const Managers = () => {
                 </div>
                 </td>
                 <td className="py-4 px-2 border border-gray-300 text-left">Project Manager</td>
-                <td className="py-4 px-2 border border-gray-300 text-left">$90.00</td>
+                <td className="py-4 px-2 border border-gray-300 text-right">$90.00</td>
                 <td className="py-4 px-2 border border-gray-300 text-left">11/12/23</td>
                 <td className="py-4 px-2 border border-gray-300 text-left"><img src={dot} /></td>
             </tr>
@@ -61,7 +61,7 @@ const Managers = () => {
                 </div>
                 </td>
                 <td className="py-4 px-2 border border-gray-300 text-left">Project Manager</td>
-                <td className="py-4 px-2 border border-gray-300 text-left">$90.00</td>
+                <td className="py-4 px-2 border border-gray-300 text-right">$90.00</td>
                 <td className="py-4 px-2 border border-gray-300 text-left">11/12/23</td>
                 <td className="py-4 px-2 border border-gray-300 text-left"><img src={dot} /></td>
             </tr>
@@ -79,7 +79,7 @@ const Managers = () => {
                 </div>
                 </td>
                 <td className="py-4 px-2 border border-gray-300 text-left">Project Manager</td>
-                <td className="py-4 px-2 border border-gray-300 text-left">$90.00</td>
+                <td className="py-4 px-2 border border-gray-300 text-right">$90.00</td>
                 <td className="py-4 px-2 border border-gray-300 text-left">11/12/23</td>
                 <td className="py-4 px-2 border border-gray-300 text-left"><img src={dot} /></td>
             </tr>
