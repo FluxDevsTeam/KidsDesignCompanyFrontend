@@ -86,7 +86,7 @@ const Customers = () => {
             </div>
           </p>
         </article>
-        <article className="border rounded-lg p-5 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25 flex-1">
+        <article className="border rounded-lg p-5 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25)] flex-1">
           <p className="w-12 h-12 rounded-full bg-[#0178A342] mb-4"></p>
           <p className="font-bold text-[14px] text-[#767676] mb-2">Total Members</p>
           <p className="flex justify-between items-end gap-20">
@@ -102,19 +102,19 @@ const Customers = () => {
       </button>
       <table className="table-auto border-collapse border border-gray-300 w-full bg-white">
         <thead>
-          <tr>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Customers</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Name of Customers</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Email</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Phone Number</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Location</th>
-            <th className="py-4 px-2 border border-gray-300 text-left font-[500]">Year Joined</th>
+          <tr className="bg-[#F4F6F9]">
+            <th className="ml-5 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Customers</th>
+            <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Name of Customers</th>
+            <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Email</th>
+            <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Phone Number</th>
+            <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Location</th>
+            <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Year Joined</th>
           </tr>
         </thead>
         <tbody>
           {
             customers.map((customer, index) => (
-              <tr key={index} onClick={() => navigate(`/dashboard/customers/${customer.id}`)}>
+              <tr key={index} onClick={() => navigate(`/dashboard/customers/${customer.id}`)} className="cursor-pointer">
                 <td className="w-1/5 py-4 px-2 border-b border-gray-300 text-left flex items-center gap-4">
                   <div className="bg-[#DDE1E7] px-1.5 py-1.5 rounded-full ring-2 ring-offset-2 ring-[#DDE1E7]">
                     <FaUser size={15} className="text-[#A6B5C3]" />
