@@ -14,6 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Settings from "./pages/ceo/settingss/settings";
 import Logout from "./pages/ceo/logout/logout";
 import Staffs from "./pages/ceo/staffs/staffs";
+import CustomerProfile from "./pages/ceo/customers/CustomerProfile";
 
 
 const router = createBrowserRouter([
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "customers",
         element: <Customers />,
+      },
+      {
+        path: "customers/:id",
+        element: <CustomerProfile />,
       },
       {
         path: "finances",

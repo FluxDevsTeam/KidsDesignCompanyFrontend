@@ -28,6 +28,12 @@ export const sidebarLink = [
   },
   {
     id: nanoid(),
+    text: "requests",
+    href: "/dashboard/requests",
+    icon: <TransferIcon className="currentColor" />,
+  },
+  {
+    id: nanoid(),
     text: "finances",
     href: "/dashboard/finances",
     icon: <FinancesIcon className="currentColor" />,
