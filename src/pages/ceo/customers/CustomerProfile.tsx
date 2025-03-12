@@ -1,35 +1,61 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { FaUser } from "react-icons/fa";
-import { fetchData } from "./api"; // Fetch customer details
+import { fetchData } from "./api";
 import { Link } from "react-router-dom";
 
+
+// Define the Customer type
+interface Project {
+  id: string;
+  name: string;
+  paid: number;
+  balance: number;
+}
+
+interface ShopItem {
+  id: string;
+  name: string;
+  quantity: number;
+  cost_price: number;
+  selling_price: number;
+  total_price: number;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone_number: string;
+  address?: string;
+  project?: Project;
+  shop_item?: ShopItem;
+}
+
 const CustomerProfile = () => {
-  const { id } = useParams(); // Get the customer ID from the URL
+  const { id } = useParams();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null | undefined>(null);
-  const [customer, setCustomer] = useState<{ 
-    name: string; 
-    email: string; 
-    phone_number: string;
-    total_spent: number;
-    total_balance: number;
-    transactions: { description: string; amount: number }[];
-  } | null>(null);
-  
+  const [error, setError] = useState<string | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
 
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const data = await fetchData(); // Replace with your actual API call
-        const foundCustomer = data.results.find((cust: { id: { toString: () => string | undefined; }; }) => cust.id.toString() === id);
+        const data = await fetchData();
+        const customers = data?.results?.all_customers || [];
+
+        // Find customer by ID
+        const foundCustomer = customers.find(
+          (cust: { id: { toString: () => string | undefined; }; }) => cust.id.toString() === id
+        );
+
         if (foundCustomer) {
           setCustomer(foundCustomer);
         } else {
           setError("Customer not found.");
         }
       } catch (err) {
-        console.error("Error fetching products:", err);
+        console.error("Error fetching customer:", err);
         setError("Error loading customer profile.");
       } finally {
         setLoading(false);
@@ -42,51 +68,53 @@ const CustomerProfile = () => {
   if (loading) return <div className="text-center mt-10">Loading...</div>;
   if (error) return <div className="text-red-500 text-center mt-10">{error}</div>;
   if (!customer) return <div className="text-red-500 text-center mt-10">Customer not found.</div>;
-//   if (!customer.transactions) return <div className="text-center mt-10">No transactions available.</div>;
-  
 
   return (
-    <div className="container mx-auto mt-10 p-6 max-w-2xl bg-white shadow-lg rounded-2xl">
-      <div className="flex items-center space-x-12">
-        <div className="w-32 h-32 rounded-full bg-gray-200 flex justify-center items-center text-gray-500">
+    <div className="container mx-auto mt-10 p-6 max-w-3xl bg-white shadow-lg rounded-2xl">
+      <div className="flex items-center space-x-6">
+        <div className="w-20 h-20 rounded-full bg-gray-200 flex justify-center items-center text-gray-500">
           <FaUser size={40} />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-[#0178A3] uppercase mb-3">{customer.name}</h2>
-          <p className="text-gray-500 mb-3">{customer.email}</p>
+          <h2 className="text-2xl font-bold text-[#0178A3] uppercase">{customer.name}</h2>
+          <p className="text-gray-500">{customer.email}</p>
           <p className="text-gray-500">{customer.phone_number}</p>
+          <p className="text-gray-500">Address: {customer.address || "N/A"}</p>
         </div>
       </div>
 
-      <div className="mt-6 border-t pt-8">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-8 bg-gray-100 rounded-lg">
-            <p className="text-gray-500 mb-4">Total Spent</p>
-            <p className="text-2xl font-bold text-[#0178A3]">$409,000{customer.total_spent}</p>
+      {/* Project Details */}
+      <div className="mt-6 border-t pt-6">
+        <h3 className="text-xl font-semibold text-gray-700">Project Details</h3>
+        {customer.project ? (
+          <div className="mt-2 p-4 bg-gray-100 rounded-lg">
+            <p className="font-bold">{customer.project.name}</p>
+            <p>Paid: ${customer.project.paid}</p>
+            <p>Balance: ${customer.project.balance}</p>
           </div>
-          <div className="p-8 bg-gray-100 rounded-lg">
-            <p className="text-gray-500 mb-4">Total Balance</p>
-            <p className="text-2xl font-bold text-red-500">$85,000{customer.total_balance}</p>
-          </div>
-        </div>
+        ) : (
+          <p className="text-gray-500">No projects available.</p>
+        )}
       </div>
 
-      {/* <div className="mt-6">
-        <h3 className="text-lg font-bold">Recent Transactions</h3>
-        <ul className="mt-3 space-y-2">
-          {customer.transactions.map((txn, index) => (
-            <li key={index} className="p-2 bg-gray-50 rounded flex justify-between">
-              <span>{txn.description}</span>
-              <span className={`font-bold ${txn.amount > 0 ? "text-green-500" : "text-red-500"}`}>
-                {txn.amount > 0 ? `+${txn.amount}` : txn.amount}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div> */}
+      {/* Shop Items */}
+      <div className="mt-6 border-t pt-6">
+        <h3 className="text-xl font-semibold text-gray-700">Shop Items</h3>
+        {customer.shop_item ? (
+          <div className="mt-2 p-4 bg-gray-100 rounded-lg">
+            <p className="font-bold">{customer.shop_item.name || "Unnamed Item"}</p>
+            <p>Quantity: {customer.shop_item.quantity}</p>
+            <p>Cost Price: ${customer.shop_item.cost_price}</p>
+            <p>Selling Price: ${customer.shop_item.selling_price}</p>
+            <p>Total Price: ${customer.shop_item.total_price}</p>
+          </div>
+        ) : (
+          <p className="text-gray-500">No shop items available.</p>
+        )}
+      </div>
 
       <div className="mt-8 text-center">
-        <Link to="/dashboard/customers" className="bg-[#0178A3] text-white p-3 rounded-lg">
+        <Link to="/dashboard/customers" className="bg-[#0178A3] text-white px-4 py-2 rounded-lg">
           Back to Customers
         </Link>
       </div>

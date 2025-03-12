@@ -7,10 +7,17 @@ import img from './ìmg/hi.jpg'
 const Customers = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [customers, setCustomers] = useState<any[]>([]);
+    const [totalCustomers, setTotalCustomers] = useState<number>(0);
+    const [activeCustomers, setActiveCustomers] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const navigate = useNavigate();
+
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", { year: "numeric", month: "long" }).replace(" ", ", ");
+    };
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -19,7 +26,9 @@ const Customers = () => {
           try {
             const data = await fetchData();
             console.log("Fetched Data:", data)
-            setCustomers(data.results || []);
+            setCustomers(Array.isArray(data.results.all_customers) ? data.results.all_customers : []);
+            setTotalCustomers(data.results.all_customers_count);
+            setActiveCustomers(data.results.active_customers);
             
         }
         catch (err) {
@@ -62,12 +71,12 @@ const Customers = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center gap-10 mb-8">
+      <div className="flex justify-between items-center gap-28 mb-8">
         <article className="border rounded-lg p-5 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25)] flex-1">
           <p className="w-12 h-12 rounded-full bg-[#0178A342] mb-4"></p>
           <p className="font-bold text-[14px] text-[#767676] mb-2">Total Customers</p>
           <p className="flex justify-between items-end gap-20">
-            <span className="text-[#0178A3] text-[36px] font-bold">57000</span>
+            <span className="text-[#0178A3] text-[36px] font-bold">{totalCustomers}</span>
             <span className="text-[#767676] text-[10px] font-bold">56% VS last month</span>
           </p>
         </article>
@@ -75,7 +84,7 @@ const Customers = () => {
           <p className="w-12 h-12 rounded-full bg-[#0178A342] mb-4"></p>
           <p className="font-bold text-[14px] text-[#767676] mb-2">Active Users</p>
           <p className="flex justify-between items-end gap-20">
-            <span className="text-[#0178A3] text-[36px] font-bold">112</span>
+            <span className="text-[#0178A3] text-[36px] font-bold">{activeCustomers}</span>
             <div className="flex items-center">
               <img src={img} alt="" className="w-7 h-7 rounded-full -ml-2 first:ml-0" />
               <img src={img} alt="" className="w-7 h-7 rounded-full -ml-2 first:ml-0" />
@@ -86,20 +95,21 @@ const Customers = () => {
             </div>
           </p>
         </article>
-        <article className="border rounded-lg p-5 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25)] flex-1">
+        {/* <article className="border rounded-lg p-5 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25)] flex-1">
           <p className="w-12 h-12 rounded-full bg-[#0178A342] mb-4"></p>
           <p className="font-bold text-[14px] text-[#767676] mb-2">Total Members</p>
           <p className="flex justify-between items-end gap-20">
             <span className="text-[#0178A3] text-[36px] font-bold">57122</span>
             <span className="text-[#767676] text-[10px] font-bold">56% VS last month</span>
           </p>
-        </article>
+        </article> */}
       </div>
 
       <button className="bg-[#FF3B30] text-white flex items-center gap-3 px-4 py-1 mb-6 rounded-lg">
         <span className="font-extrabold text-[30px]">+</span>
         <span className="text-[16px]"> Create Customer</span>
       </button>
+
       <table className="table-auto border-collapse border border-gray-300 w-full bg-white">
         <thead>
           <tr className="bg-[#F4F6F9]">
@@ -107,14 +117,17 @@ const Customers = () => {
             <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Name of Customers</th>
             <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Email</th>
             <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Phone Number</th>
+            <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Latest Project</th>
+            <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Last item Purchased Project</th>
             <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Location</th>
             <th className="py-4 px-2 border border-gray-300 text-left font-[500] bg-[#F4F6F9]">Year Joined</th>
           </tr>
         </thead>
+        
         <tbody>
           {
-            customers.map((customer, index) => (
-              <tr key={index} onClick={() => navigate(`/dashboard/customers/${customer.id}`)} className="cursor-pointer">
+            customers.map((customer) => (
+              <tr key={customer.id} onClick={() => navigate(`/dashboard/customers/${customer.id}`)} className="cursor-pointer">
                 <td className="w-1/5 py-4 px-2 border-b border-gray-300 text-left flex items-center gap-4">
                   <div className="bg-[#DDE1E7] px-1.5 py-1.5 rounded-full ring-2 ring-offset-2 ring-[#DDE1E7]">
                     <FaUser size={15} className="text-[#A6B5C3]" />
@@ -129,8 +142,19 @@ const Customers = () => {
                 </td>
                 <td className="py-4 px-2 border border-gray-300 text-left">{customer.email}</td>
                 <td className="py-4 px-2 border border-gray-300 text-right">{customer.phone_number}</td>
+                <td className="py-4 px-2 border border-gray-300 text-right">
+                  <p className="font-bold">{customer.project?.name || "No Project"}</p>
+                  <p>{customer.project?.paid ?? "N/A"}</p>
+                </td>
+                <td className="py-4 px-2 border border-gray-300 text-right">
+                  <p className="font-bold">{customer.project?.name || "No Project"}</p>
+                  <p className="flex justify-between items-center">
+                    <span>{customer.shop_item?.quantity || "None"}</span>
+                    <span>{customer.shop_item?.total_price || "No Price"}</span>
+                  </p>
+                </td>
                 <td className="py-4 px-2 border border-gray-300 text-left">{customer.address}</td>
-                <td className="py-4 px-2 border border-gray-300 text-left">{new Date(customer.created_at).getFullYear()}</td>
+                <td className="py-4 px-2 border border-gray-300 text-left">{formatDate(customer.created_at)}</td>
                 
               </tr>
             ))
@@ -142,42 +166,3 @@ const Customers = () => {
 }
 
 export default Customers
-
-
-// {fetchData.map((staff, index) => (
-//     <tr key={index}>
-//       <td className="text-center py-4 px-2 border border-gray-300">
-//         <input type="checkbox" className="w-5 h-5 bg-[#90909014] border-4 border-gray-300 rounded-2xl" />
-//       </td>
-//       <td className="py-4 px-2 border border-gray-300 text-left">
-//         <div className="flex items-center gap-2">
-//           <span className="bg-[#DDE1E7] px-1.5 py-1.5 rounded-full ring-2 ring-offset-2 ring-[#DDE1E7]">
-//             <FaUser size={15} className="text-[#A6B5C3]" />
-//           </span>
-//           <span>{staff.name}</span>
-//         </div>
-//       </td>
-//       <td className="py-4 px-2 border border-gray-300 text-left">{staff.role}</td>
-//       <td className="py-4 px-2 border border-gray-300 text-right">{staff.salary}</td>
-//       <td className="py-4 px-2 border border-gray-300 text-left">{staff.date}</td>
-//       <td className="py-4 px-2 border border-gray-300 text-left relative">
-//         <div className="relative inline-block" ref={dropdownRef}>
-//           <img
-//             src={dot}
-//             className="cursor-pointer"
-//             onClick={() => toggleDropdown(index)}
-//             alt="Options"
-//           />
-//           {openDropdown === index && (
-//             <div className="absolute right-0 top-8 bg-white border border-gray-300 rounded-md shadow-md w-32 z-10">
-//               <ul className="text-sm text-gray-700">
-//                 <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">👁️ View</li>
-//                 <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">✏️ Edit</li>
-//                 <li className="px-4 py-2 text-red-500 hover:bg-red-100 cursor-pointer">🗑️ Delete</li>
-//               </ul>
-//             </div>
-//           )}
-//         </div>
-//       </td>
-//     </tr>
-//   ))}
