@@ -196,10 +196,62 @@ const CustomerProfile = () => {
       </div>
 
       <div className="flex justify-center">
-          <Link to="/dashboard/customers" className="bg-blue-200 text-white px-4 py-2 rounded-lg">
-            Back to Customers
-          </Link>
-        </div>
+        <Link to="/dashboard/customers" className="bg-blue-200 text-white px-4 py-2 rounded-lg">
+          Back to Customers
+        </Link>
+      </div>
+      
+      <h3 className="mb-6 mt-14 font-bold text-[24px] text-[#0178A3]">Projects</h3>
+      <table className="table-auto border-collapse border border-gray-300 w-full bg-white mb-14">
+        <thead>
+          <tr className="bg-[#F4F6F9] font-black text-left">
+            <th className="py-4 px-2 border border-gray-300">Name</th>
+            <th className="py-4 px-2 border border-gray-300">Total Paid</th>
+            <th className="py-4 px-2 border border-gray-300">Total Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {customer.customer_details.project && customer.customer_details.project.length > 0 ? (
+            customer.customer_details.project.map((proj) => (
+            <tr key={proj.id}>
+              <td className="py-4 px-2 border border-gray-300 capitalize">{proj.name}</td>
+              <td className="py-4 px-2 border border-gray-300 capitalize">{proj.paid}</td>
+              <td className="py-4 px-2 border border-gray-300 capitalize">{proj.balance}</td>
+            </tr>
+              ))
+            ) : (
+              <p>No projects available.</p>
+            )
+          }
+        </tbody>
+      </table>
+      
+      <h3 className="mb-6 mt-14 font-bold text-[24px] text-[#0178A3]">Shop Items</h3>
+      <table className="table-auto border-collapse border border-gray-300 w-full bg-white">
+        <thead>
+          <tr className="bg-[#F4F6F9] font-black text-left">
+            <th className="py-4 px-2 border border-gray-300">Quantity</th>
+            <th className="py-4 px-2 border border-gray-300">Cost Price</th>
+            <th className="py-4 px-2 border border-gray-300">Selling Price</th>
+            <th className="py-4 px-2 border border-gray-300">Total Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {customer.customer_details.shop_item && customer.customer_details.shop_item.length > 0 ? (
+            customer.customer_details.shop_item.map((proj) => (
+            <tr key={proj.id}>
+              <td className="py-4 px-2 border border-gray-300 capitalize">{proj.quantity}</td>
+              <td className="py-4 px-2 border border-gray-300">{proj.cost_price}</td>
+              <td className="py-4 px-2 border border-gray-300">{proj.selling_price}</td>
+              <td className="py-4 px-2 border border-gray-300">{proj.total_price}</td>
+            </tr>
+              ))
+            ) : (
+              <p className="capitalize">No item available.</p>
+            )
+          }
+        </tbody>
+      </table>
     </div>
   );
 };
