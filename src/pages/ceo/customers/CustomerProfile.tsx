@@ -1,59 +1,47 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FaUser } from "react-icons/fa";
-import { fetchData } from "./api";
 import { Link } from "react-router-dom";
-
-
-// Define the Customer type
-interface Project {
-  id: string;
-  name: string;
-  paid: number;
-  balance: number;
-}
-
-interface ShopItem {
-  id: string;
-  name: string;
-  quantity: number;
-  cost_price: number;
-  selling_price: number;
-  total_price: number;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone_number: string;
-  address?: string;
-  project?: Project;
-  shop_item?: ShopItem;
-}
+import { FaUser, FaEdit, FaCheck, FaTimes } from "react-icons/fa";
+import { CustomerResponse } from "./Interfaces";
 
 const CustomerProfile = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] = useState<CustomerResponse | null>(null);
+  
+  // Editable fields
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState("");
+  const [editedEmail, setEditedEmail] = useState("");
+  const [editedPhone, setEditedPhone] = useState("");
+  const [editedAddress, setEditedAddress] = useState("");
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const data = await fetchData();
-        const customers = data?.results?.all_customers || [];
+        setLoading(true);
+        const response = await fetch(`https://kidsdesigncompany.pythonanywhere.com/api/customer/${id}/?format=json`);
 
-        // Find customer by ID
-        const foundCustomer = customers.find(
-          (cust: { id: { toString: () => string | undefined; }; }) => cust.id.toString() === id
-        );
-
-        if (foundCustomer) {
-          setCustomer(foundCustomer);
-        } else {
-          setError("Customer not found.");
+        if (!response.ok) {
+          throw new Error("Failed to fetch customer data.");
         }
+
+        const data: CustomerResponse = await response.json();
+        console.log("Fetched customer data:", data);
+
+        if (!data || !data.customer_details) {
+          setError("Customer not found.");
+          return;
+        }
+
+        setCustomer(data);
+        setEditedName(data.customer_details.name);
+        setEditedEmail(data.customer_details.email);
+        setEditedPhone(data.customer_details.phone_number);
+        setEditedAddress(data.customer_details.address)
       } catch (err) {
         console.error("Error fetching customer:", err);
         setError("Error loading customer profile.");
@@ -65,59 +53,153 @@ const CustomerProfile = () => {
     fetchCustomer();
   }, [id]);
 
+  const handleUpdate = async () => {
+    if (!customer) return;
+
+    setUpdateLoading(true);
+    setUpdateError(null);
+
+    try {
+      const response = await fetch(
+        `https://kidsdesigncompany.pythonanywhere.com/api/customer/${customer.customer_details.id}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: editedName,
+            email: editedEmail,
+            phone_number: editedPhone,
+            address: editedAddress,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update customer details.");
+      }
+
+      const updatedData = await response.json();
+      setCustomer((prev) => prev ? { ...prev, customer_details: { ...prev.customer_details, ...updatedData } } : null);
+      setIsEditing(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      setUpdateError("Error updating customer details.");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
   if (loading) return <div className="text-center mt-10">Loading...</div>;
   if (error) return <div className="text-red-500 text-center mt-10">{error}</div>;
   if (!customer) return <div className="text-red-500 text-center mt-10">Customer not found.</div>;
 
   return (
-    <div className="container mx-auto mt-10 p-6 max-w-3xl bg-white shadow-lg rounded-2xl">
-      <div className="flex items-center space-x-6">
-        <div className="w-20 h-20 rounded-full bg-gray-200 flex justify-center items-center text-gray-500">
-          <FaUser size={40} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-[#0178A3] uppercase">{customer.name}</h2>
-          <p className="text-gray-500">{customer.email}</p>
-          <p className="text-gray-500">{customer.phone_number}</p>
-          <p className="text-gray-500">Address: {customer.address || "N/A"}</p>
-        </div>
+    <div className="mx-20 my-10">
+      {/* Customer Summary */}
+      <div className="flex justify-between items-center gap-4 mb-24">
+        <article className="border rounded-lg p-5 shadow-md flex-1">
+          <p className="font-bold text-[14px] text-[#767676] mb-2">Total Project Count</p>
+          <p className="text-[#0178A3] text-[36px] font-bold">{customer.total_projects_count}</p>
+        </article>
+
+        <article className="border rounded-lg p-5 shadow-md flex-1">
+          <p className="font-bold text-[14px] text-[#767676] mb-2">Active Project Count</p>
+          <p className="text-[#0178A3] text-[36px] font-bold">{customer.active_projects_count}</p>
+        </article>
+
+        <article className="border rounded-lg p-5 shadow-md flex-1">
+          <p className="font-bold text-[14px] text-[#767676] mb-2">Total Project Cost</p>
+          <p className="text-[#0178A3] text-[36px] font-bold">{customer.total_projects_cost}</p>
+        </article>
+
+        <article className="border rounded-lg p-5 shadow-md flex-1">
+          <p className="font-bold text-[14px] text-[#767676] mb-2">Total Shop-items Count</p>
+          <p className="text-[#0178A3] text-[36px] font-bold">{customer.total_shop_items_count}</p>
+        </article>
+
+        <article className="border rounded-lg p-5 shadow-md flex-1">
+          <p className="font-bold text-[14px] text-[#767676] mb-2">Total Shop-items Cost</p>
+          <p className="text-[#0178A3] text-[36px] font-bold">{customer.total_shop_items_cost}</p>
+        </article>
       </div>
 
-      {/* Project Details */}
-      <div className="mt-6 border-t pt-6">
-        <h3 className="text-xl font-semibold text-gray-700">Project Details</h3>
-        {customer.project ? (
-          <div className="mt-2 p-4 bg-gray-100 rounded-lg">
-            <p className="font-bold">{customer.project.name}</p>
-            <p>Paid: ${customer.project.paid}</p>
-            <p>Balance: ${customer.project.balance}</p>
+      {/* Customer Profile */}
+      <div className="container mx-auto mt-10 p-6 max-w-3xl bg-white shadow-lg rounded-2xl mb-12">
+        <div className="flex items-center space-x-6">
+          <div className="w-40 h-40 rounded-full bg-gray-200 flex justify-center items-center text-gray-500">
+            <FaUser size={80} />
           </div>
-        ) : (
-          <p className="text-gray-500">No projects available.</p>
-        )}
-      </div>
-
-      {/* Shop Items */}
-      <div className="mt-6 border-t pt-6">
-        <h3 className="text-xl font-semibold text-gray-700">Shop Items</h3>
-        {customer.shop_item ? (
-          <div className="mt-2 p-4 bg-gray-100 rounded-lg">
-            <p className="font-bold">{customer.shop_item.name || "Unnamed Item"}</p>
-            <p>Quantity: {customer.shop_item.quantity}</p>
-            <p>Cost Price: ${customer.shop_item.cost_price}</p>
-            <p>Selling Price: ${customer.shop_item.selling_price}</p>
-            <p>Total Price: ${customer.shop_item.total_price}</p>
+          <div className="flex flex-col gap-2">
+            {isEditing ? (
+              <>
+                <input
+                  type="text"
+                  className="border p-2 rounded w-full"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                />
+                <input
+                  type="email"
+                  className="border p-2 rounded w-full"
+                  value={editedEmail}
+                  onChange={(e) => setEditedEmail(e.target.value)}
+                />
+                <input
+                  type="number"
+                  className="border p-2 rounded w-full"
+                  value={editedPhone}
+                  onChange={(e) => setEditedPhone(e.target.value)}
+                />
+                <input
+                  type="email"
+                  className="border p-2 rounded w-full"
+                  value={editedAddress}
+                  onChange={(e) => setEditedAddress(e.target.value)}
+                />
+                <div className="flex gap-3 mt-2">
+                  <button
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
+                    onClick={handleUpdate}
+                    disabled={updateLoading}
+                  >
+                    {updateLoading ? "Saving..." : <FaCheck />}
+                  </button>
+                  <button
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-[#0178A3] uppercase">{customer.customer_details.name}</h2>
+                <p>{customer.customer_details.email}</p>
+                <p>{customer.customer_details.phone_number}</p>
+                <p>Address: {customer.customer_details.address || "N/A"}</p>
+                <button
+                  className="bg-[#FF3B30] text-white px-4 py-2 rounded-lg flex justify-center items-center mt-2"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <FaEdit className="mr-2" /> Edit
+                </button>
+              </>
+            )}
+            {updateError && <p className="text-red-500 mt-2">{updateError}</p>}
           </div>
-        ) : (
-          <p className="text-gray-500">No shop items available.</p>
-        )}
+        </div>
+
+        {/* Centering the Link */}
       </div>
 
-      <div className="mt-8 text-center">
-        <Link to="/dashboard/customers" className="bg-[#0178A3] text-white px-4 py-2 rounded-lg">
-          Back to Customers
-        </Link>
-      </div>
+      <div className="flex justify-center">
+          <Link to="/dashboard/customers" className="bg-blue-200 text-white px-4 py-2 rounded-lg">
+            Back to Customers
+          </Link>
+        </div>
     </div>
   );
 };
