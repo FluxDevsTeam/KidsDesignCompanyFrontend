@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { factoryData } from './api';
-import { RoundedBar, CustomTooltip } from '../../../components/CustomChartComponents';
+import React from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
+import { CustomTooltip } from '../../../components/CustomChartComponents';
 
 // Format number with naira sign, commas, and compact notation
 const formatNairaCompact = (value: number) => {
@@ -17,56 +24,13 @@ const formatNairaCompact = (value: number) => {
   return `${sign}₦${absValue.toLocaleString()}`;
 };
 
-const BarChartComponent = () => {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface BarChartProps {
+  incomeData: { name: string; TotalIncome: number; Project: number; Shop: number }[];
+  expenseData: { name: string; TotalExpenses: number; Project: number; Shop: number; Others: number }[];
+  profitData: { name: string; Profit: number }[];
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await factoryData();
-        setData(result);
-      } catch (err) {
-        setError('Failed to fetch data');
-      }
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return <div className="text-center p-10 font-semibold">Loading charts...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center p-10 text-red-500 font-semibold">{error}</div>;
-  }
-
-  const { monthly_income_trend, monthly_expense_trend } = data;
-  const { monthly_profit_trend } = data;
-
-  const incomeData = (monthly_income_trend || []).map((item: any) => ({
-    name: item.month,
-    TotalIncome: item.total_income ?? 0,
-    Project: item.type_breakdown?.project ?? 0,
-    Shop: item.type_breakdown?.shop ?? 0,
-  }));
-
-  const expenseData = (monthly_expense_trend || []).map((item: any) => ({
-    name: item.month,
-    TotalExpenses: item.total_expenses ?? 0,
-    Project: item.type_breakdown?.project ?? 0,
-    Shop: item.type_breakdown?.shop ?? 0,
-    Others: item.type_breakdown?.others ?? 0,
-  }));
-
-  const profitData = (monthly_profit_trend || []).map((item: any) => ({
-    name: item.month,
-    Profit: item.profit ?? 0,
-  }));
-
+const BarChartComponent: React.FC<BarChartProps> = ({ incomeData, expenseData, profitData }) => {
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 bg-gray-50">
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -83,8 +47,7 @@ const BarChartComponent = () => {
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={formatNairaCompact} tick={{ fontSize: 12 }} width={64} />
-              <Tooltip formatter={(value: number) => formatNairaCompact(value)} content={<CustomTooltip />} cursor={{fill: 'rgba(240, 240, 240, 0.5)'}} />
-              {/* <Legend iconType="circle" iconSize={10} /> */}
+              <Tooltip formatter={(value: number) => formatNairaCompact(value)} content={<CustomTooltip />} cursor={{ fill: 'rgba(240, 240, 240, 0.5)' }} />
               <Bar dataKey="TotalIncome" fill="url(#incomeGradient)" name="Total Income" barSize={20} />
             </BarChart>
           </ResponsiveContainer>
@@ -105,8 +68,7 @@ const BarChartComponent = () => {
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={formatNairaCompact} tick={{ fontSize: 12 }} width={64} />
-              <Tooltip formatter={(value: number) => formatNairaCompact(value)} content={<CustomTooltip />} cursor={{fill: 'rgba(240, 240, 240, 0.5)'}} />
-              {/* <Legend iconType="circle" iconSize={10} /> */}
+              <Tooltip formatter={(value: number) => formatNairaCompact(value)} content={<CustomTooltip />} cursor={{ fill: 'rgba(240, 240, 240, 0.5)' }} />
               <Bar dataKey="TotalExpenses" fill="url(#expenseGradient)" name="Total Expenses" barSize={20} />
             </BarChart>
           </ResponsiveContainer>
@@ -121,13 +83,8 @@ const BarChartComponent = () => {
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={formatNairaCompact} tick={{ fontSize: 12 }} width={64} />
-              <Tooltip formatter={(value: number) => formatNairaCompact(value)} content={<CustomTooltip />} cursor={{fill: 'rgba(240, 240, 240, 0.5)'}} />
-              {/* <Legend iconType="circle" iconSize={10} /> */}
-              <Bar 
-                dataKey="Profit" 
-                fill="#4CAF50"
-                barSize={40}
-              />
+              <Tooltip formatter={(value: number) => formatNairaCompact(value)} content={<CustomTooltip />} cursor={{ fill: 'rgba(240, 240, 240, 0.5)' }} />
+              <Bar dataKey="Profit" fill="#4CAF50" name="Profit" barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>
