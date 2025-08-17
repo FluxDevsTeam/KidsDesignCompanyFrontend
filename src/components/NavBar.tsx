@@ -21,17 +21,27 @@ const NavBar = ({ toggleSidebar, isSidebarOpen, title }: NavBarProps) => {
   };
 
   const formattedRole = formatRole(userRole);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 640; // Tailwind's 'sm' breakpoint is 640px
+    }
+    return false; // Default for server or initial render
+  });
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 640); // Tailwind's 'sm' breakpoint is 640px
+      setIsMobile(window.innerWidth < 640);
     };
 
-    handleResize(); // Set initial value
-    window.addEventListener('resize', handleResize);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+    }
 
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
   }, []);
 
   const displayTitle = title || (isMobile ? formattedRole : `Welcome, ${formattedRole}`);

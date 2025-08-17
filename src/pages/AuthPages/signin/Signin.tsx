@@ -72,28 +72,28 @@ const Signin = () => {
         const role = result.role || localStorage.getItem("user_role");
         switch (role) {
           case "ceo":
-            navigate("/ceo/dashboard");
+            window.location.href = "/ceo/dashboard";
             break;
           case "admin":
-            navigate("/admin/dashboard");
+            window.location.href = "/admin/dashboard";
             break;
           case "accountant":
-            navigate("/accountant/dashboard");
+            window.location.href = "/accountant/dashboard";
             break;
           case "factory_manager":
-            navigate("/factory-manager/dashboard");
+            window.location.href = "/factory-manager/dashboard";
             break;
           case "project_manager":
-            navigate("/project-manager/dashboard");
+            window.location.href = "/project-manager/dashboard";
             break;
           case "storekeeper":
-            navigate("/store-keeper/dashboard");
+            window.location.href = "/store-keeper/dashboard";
             break;
           case "shopkeeper":
-            navigate("/shop/dashboard");
+            window.location.href = "/shop/dashboard";
             break;
           default:
-            navigate("/");
+            window.location.href = "/";
         }
       } else {
         setError(result.error || "Login failed");
