@@ -5,6 +5,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { ThreeDots } from "react-loader-spinner";
 import Modal from "../../Modal";
 import SearchablePaginatedDropdown from "./SearchablePaginatedDropdown";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 interface Customer {
   id: number;
@@ -212,13 +213,13 @@ const EditSoldItemPage: React.FC = () => {
 
     try {
       const requestBody = {
-        quantity: parseFloat(formData.quantity),
+        quantity: parseFloat((formData.quantity || '').replace(/,/g, '')),
         item: formData.item ? parseInt(formData.item) : null,
         customer: formData.customer ? parseInt(formData.customer) : null,
         project: formData.project ? parseInt(formData.project) : null,
         logistics: formData.project
           ? null
-          : parseFloat(formData.logistics) || null, // Set logistics to null if project exists
+          : (formData.logistics ? parseFloat((formData.logistics || '').replace(/,/g, '')) : null),
         date: formData.date,
       };
 
@@ -313,12 +314,10 @@ const EditSoldItemPage: React.FC = () => {
           />
           <div>
             <label className="block text-sm font-medium text-gray-700">Quantity</label>
-            <input
-              type="number"
-              required
+            <FormattedNumberInput
               value={formData.quantity}
-              onChange={e => {
-                let val = e.target.value;
+              onValueChange={(v) => {
+                let val = v;
                 const max = itemDetails ? itemDetails.quantity + originalQuantity : undefined;
                 if (max !== undefined && Number(val) > max) {
                   val = max.toString();
@@ -326,9 +325,6 @@ const EditSoldItemPage: React.FC = () => {
                 setFormData({ ...formData, quantity: val });
               }}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              disabled={!formData.item}
-              min={1}
-              max={itemDetails ? itemDetails.quantity + originalQuantity : undefined}
             />
             {itemDetails && (
               <div className="mt-2 text-xs text-black">
@@ -369,10 +365,9 @@ const EditSoldItemPage: React.FC = () => {
             )}
           <div>
             <label className="block text-sm font-medium text-gray-700">Logistics (optional)</label>
-            <input
-              type="number"
+            <FormattedNumberInput
               value={formData.logistics}
-              onChange={e => setFormData({ ...formData, logistics: e.target.value })}
+              onValueChange={(v) => setFormData({ ...formData, logistics: v })}
               disabled={!!formData.project}
               className={`mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 ${formData.project ? "bg-gray-100" : ""}`}
             />

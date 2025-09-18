@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import SearchablePaginatedDropdown from "../../../shop/sold/Sold Components/SearchablePaginatedDropdown";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 interface Customer {
   id: number;
@@ -206,9 +207,9 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({
       deadline: formData.deadline || null,
       date_delivered: null,
       customer: parseInt(formData.customer_detail),
-      selling_price: formData.selling_price,
-      logistics: formData.logistics || "0",
-      service_charge: formData.service_charge || "0",
+      selling_price: (formData.selling_price || '').replace(/,/g, ''),
+      logistics: (formData.logistics || '0').replace(/,/g, ''),
+      service_charge: (formData.service_charge || '0').replace(/,/g, ''),
       note: formData.note || null,
     };
 
@@ -219,7 +220,11 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({
     if (invoiceImage) formDataToSubmit.append("invoice_image", invoiceImage);
 
     if (allItems.length > 0 && allItems.some(row => row.item && row.price)) {
-      formDataToSubmit.append('all_items', JSON.stringify(allItems.filter(row => row.item && row.price).map(row => ({ ...row, quantity: row.quantity || '1' }))));
+      formDataToSubmit.append('all_items', JSON.stringify(
+        allItems
+          .filter(row => row.item && row.price)
+          .map(row => ({ ...row, price: (row.price || '').replace(/,/g, ''), quantity: (row.quantity || '1').replace(/,/g, '') }))
+      ));
     }
 
     try {
@@ -378,12 +383,11 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="selling_price" className="text-xs sm:text-sm lg:text-base">Selling Price (₦)</Label>
-                      <Input
+                      <FormattedNumberInput
                         id="selling_price"
                         name="selling_price"
-                        type="number"
                         value={formData.selling_price}
-                        onChange={handleChange}
+                        onValueChange={(v) => setFormData(prev => ({ ...prev, selling_price: v }))}
                         required
                         className={`text-xs sm:text-sm lg:text-base ${errorDetails.selling_price ? "border-red-500" : ""}`}
                       />
@@ -397,23 +401,21 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="logistics" className="text-xs sm:text-sm lg:text-base">Logistics Cost (optional)</Label>
-                      <Input
+                      <FormattedNumberInput
                         id="logistics"
                         name="logistics"
-                        type="number"
                         value={formData.logistics}
-                        onChange={handleChange}
+                        onValueChange={(v) => setFormData(prev => ({ ...prev, logistics: v }))}
                         className="text-xs sm:text-sm lg:text-base"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="service_charge" className="text-xs sm:text-sm lg:text-base">Service Charge (optional)</Label>
-                      <Input
+                      <FormattedNumberInput
                         id="service_charge"
                         name="service_charge"
-                        type="number"
                         value={formData.service_charge}
-                        onChange={handleChange}
+                        onValueChange={(v) => setFormData(prev => ({ ...prev, service_charge: v }))}
                         className="text-xs sm:text-sm lg:text-base"
                       />
                     </div>
@@ -452,15 +454,14 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({
                           />
                           <Input
                             placeholder="Price"
-                            type="number"
+                            type="text"
                             value={row.price}
                             onChange={e => handleAllItemChange(idx, 'price', e.target.value)}
                             className="w-full sm:w-1/3 text-xs sm:text-sm lg:text-base"
                           />
                           <Input
                             placeholder="Quantity"
-                            type="number"
-                            min="1"
+                            type="text"
                             value={row.quantity}
                             onChange={e => handleAllItemChange(idx, 'quantity', e.target.value)}
                             className="w-full sm:w-1/4 text-xs sm:text-sm lg:text-base"

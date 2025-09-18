@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 // Define the types for the project data
 
@@ -216,22 +217,23 @@ const AddProject = () => {
       deadline: formData.deadline || null,
       date_delivered: null,
       customer: parseInt(formData.customer_detail),
-      selling_price: formData.selling_price,
-      logistics: formData.logistics || "0",
-      service_charge: formData.service_charge || "0",
+      selling_price: (formData.selling_price || ''),
+      logistics: (formData.logistics || '0'),
+      service_charge: (formData.service_charge || '0'),
       note: formData.note || null,
     };
 
     // Append text fields
     Object.entries(projectData).forEach(([key, value]) => {
       if (value !== null) {
-        formDataToSubmit.append(key, value.toString());
+        const val = typeof value === 'string' ? value.replace(/,/g, '') : String(value);
+        formDataToSubmit.append(key, val);
       }
     });
 
     // Append all_items as JSON string if not empty
     if (allItems.length > 0 && allItems.some(row => row.item && row.price)) {
-      formDataToSubmit.append('all_items', JSON.stringify(allItems.filter(row => row.item && row.price).map(row => ({ ...row, quantity: row.quantity || '1' }))));
+      formDataToSubmit.append('all_items', JSON.stringify(allItems.filter(row => row.item && row.price).map(row => ({ ...row, price: (row.price || '').replace(/,/g, ''), quantity: (row.quantity || '1').replace(/,/g, '') }))));
     }
 
     // Append invoice image if present
@@ -426,12 +428,11 @@ const AddProject = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="selling_price">Selling Price (₦)*</Label>
-                <Input
+                <FormattedNumberInput
                   id="selling_price"
                   name="selling_price"
-                  type="number"
                   value={formData.selling_price}
-                  onChange={handleChange}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, selling_price: v }))}
                   required
                   className={errorDetails.selling_price ? "border-red-500" : ""}
                 />
@@ -457,23 +458,21 @@ const AddProject = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="logistics">Logistics Cost (₦)</Label>
-                <Input
+                <FormattedNumberInput
                   id="logistics"
                   name="logistics"
-                  type="number"
                   value={formData.logistics}
-                  onChange={handleChange}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, logistics: v }))}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="service_charge">Service Charge (₦)</Label>
-                <Input
+                <FormattedNumberInput
                   id="service_charge"
                   name="service_charge"
-                  type="number"
                   value={formData.service_charge}
-                  onChange={handleChange}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, service_charge: v }))}
                 />
               </div>
             </div>
@@ -523,15 +522,14 @@ const AddProject = () => {
                     />
                     <Input
                       placeholder="Price"
-                      type="number"
+                      type="text"
                       value={row.price}
                       onChange={e => handleAllItemChange(idx, 'price', e.target.value)}
                       className="w-1/3"
                     />
                     <Input
                       placeholder="Quantity"
-                      type="number"
-                      min="1"
+                      type="text"
                       value={row.quantity}
                       onChange={e => handleAllItemChange(idx, 'quantity', e.target.value)}
                       className="w-1/4"

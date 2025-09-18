@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 interface PaymentData {
   amount: number;
@@ -122,8 +123,8 @@ const EditPaymentModal: React.FC<EditPaymentModalProps> = ({
       // Format the data based on recipient type
       const formattedData =
         paymentData.recipientType === "contractor"
-          ? { amount: paymentData.amount, contract: paymentData.recipientId }
-          : { amount: paymentData.amount, salary: paymentData.recipientId };
+          ? { amount: Number(String(paymentData.amount).replace(/,/g, "")), contract: paymentData.recipientId }
+          : { amount: Number(String(paymentData.amount).replace(/,/g, "")), salary: paymentData.recipientId };
 
       // Get the token from localStorage
       const token = localStorage.getItem("accessToken");
@@ -201,13 +202,11 @@ const EditPaymentModal: React.FC<EditPaymentModalProps> = ({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
-                <Input
+                <FormattedNumberInput
                   id="amount"
                   name="amount"
-                  type="number"
-                  min="1"
-                  value={formData.amount}
-                  onChange={handleChange}
+                  value={String(formData.amount || "")}
+                  onValueChange={(v) => setFormData((prev) => ({ ...prev, amount: Number(v || 0) }))}
                   required
                 />
               </div>

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const API_URL = "https://backend.kidsdesigncompany.com/api/overhead-cost/";
 
@@ -36,7 +37,7 @@ const formatNumber = (num: string | number) => {
 
 export default function OverheadCost() {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset } = useForm<{
+  const { register, handleSubmit, reset, setValue, watch } = useForm<{
     overhead_cost_base: string;
   }>();
 
@@ -67,7 +68,7 @@ export default function OverheadCost() {
 
   // Handle form submission
   const onSubmit = (formData: { overhead_cost_base: string }) => {
-    mutation.mutate(formData);
+    mutation.mutate({ overhead_cost_base: (formData.overhead_cost_base || '').replace(/,/g, '') });
   };
 
   if (isLoading) return <p>Loading...</p>;
@@ -87,9 +88,10 @@ export default function OverheadCost() {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <input
-          {...register("overhead_cost_base")}
-          type="number"
+        <FormattedNumberInput
+          id="overhead_cost_base"
+          value={watch("overhead_cost_base") || ""}
+          onValueChange={(v) => setValue("overhead_cost_base", v)}
           placeholder="Enter new cost"
           className="w-full p-2 border rounded"
         />

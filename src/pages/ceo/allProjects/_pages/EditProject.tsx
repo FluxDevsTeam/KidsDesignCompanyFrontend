@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 import {
   Select,
   SelectContent,
@@ -461,7 +462,8 @@ const EditProject = () => {
     // Append text fields
     Object.entries(projectData).forEach(([key, value]) => {
       if (value !== null) {
-        formDataToSubmit.append(key, value.toString());
+        const val = typeof value === 'string' ? value.replace(/,/g, '') : String(value);
+        formDataToSubmit.append(key, val);
       }
     });
 
@@ -620,12 +622,11 @@ const EditProject = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="selling_price">Selling Price (₦) (optional)</Label>
-                <Input
+                <FormattedNumberInput
                   id="selling_price"
                   name="selling_price"
-                  type="number"
                   value={formData.selling_price}
-                  onChange={handleChange}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, selling_price: v }))}
                   className={errorDetails.selling_price ? "border-red-500" : ""}
                 />
                 {errorDetails.selling_price && (
@@ -659,12 +660,11 @@ const EditProject = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="logistics">Logistics Cost (₦)</Label>
-                <Input
+                <FormattedNumberInput
                   id="logistics"
                   name="logistics"
-                  type="number"
                   value={formData.logistics}
-                  onChange={handleChange}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, logistics: v }))}
                   className={errorDetails.logistics ? "border-red-500" : ""}
                 />
                 {errorDetails.logistics && (
@@ -676,15 +676,12 @@ const EditProject = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="service_charge">Service Charge (₦)</Label>
-                <Input
+                <FormattedNumberInput
                   id="service_charge"
                   name="service_charge"
-                  type="number"
                   value={formData.service_charge}
-                  onChange={handleChange}
-                  className={
-                    errorDetails.service_charge ? "border-red-500" : ""
-                  }
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, service_charge: v }))}
+                  className={errorDetails.service_charge ? "border-red-500" : ""}
                 />
                 {errorDetails.service_charge && (
                   <p className="text-sm text-red-500">
