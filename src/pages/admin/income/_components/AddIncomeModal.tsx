@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 // import CategoryDropdown from "./Category";
 import SearchableCategoryDropdown from "./SearchableCategoryDropdown";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 interface AddIncomeModalProps {
   isOpen: boolean;
@@ -79,7 +80,7 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose, onSucc
       const token = localStorage.getItem("accessToken");
       const formatted: any = {
         name: payload.name,
-        amount: Number(payload.amount),
+        amount: Number((payload.amount || "").replace(/,/g, "")),
         cash: payload.cash,
         date: payload.date,
         category: payload.category,
@@ -169,12 +170,11 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ isOpen, onClose, onSucc
             </div>
             <div>
               <Label htmlFor="amount">Amount</Label>
-              <Input
+              <FormattedNumberInput
                 id="amount"
                 name="amount"
-                type="number"
                 value={formData.amount}
-                onChange={(e) => setFormData((p) => ({ ...p, amount: e.target.value }))}
+                onValueChange={(v) => setFormData((p) => ({ ...p, amount: v }))}
                 required
               />
             </div>

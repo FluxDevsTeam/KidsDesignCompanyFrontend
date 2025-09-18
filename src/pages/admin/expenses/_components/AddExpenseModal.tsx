@@ -77,6 +77,7 @@ interface ExpenseFormData {
   date?: string;
   product?: number | null; // Add product field
   payment_method: string;
+  asset: boolean; // <-- Add asset field
 }
 
 interface AddPaymentModalProps {
@@ -117,6 +118,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       date: todayFormatted,
       product: null,
       payment_method: "CASH",
+      asset: false, // <-- Default value
     };
   });
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -130,9 +132,11 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     mutationFn: async (newExpense: ExpenseFormData) => {
       const token = localStorage.getItem("accessToken");
 
+      const sanitizedAmount = (newExpense.amount || "").toString().replace(/,/g, "");
+
       const formattedData = {
         name: newExpense.name,
-        amount: Number(newExpense.amount),
+        amount: Number(sanitizedAmount),
         quantity: newExpense.quantity || null, // Send null if quantity is empty
         category: newExpense.category,
         description: newExpense.description || "",
@@ -150,6 +154,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             : null,
         date: newExpense.date || undefined,
         payment_method: newExpense.payment_method || undefined,
+        asset: newExpense.asset, // <-- Pass asset to backend
       };
 
       console.log("Sending data to API:", formattedData);
@@ -185,6 +190,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       date: "",
       product: null, // Reset product
           payment_method: "CASH",
+      asset: false, // Reset asset
       });
       if (onSuccess) onSuccess();
     },
@@ -207,9 +213,21 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         selectedType: name,
         selectedItem: value,
       }));
+    } else if (name === "amount") {
+      const raw = value.replace(/,/g, "");
+      // Allow only digits and optional single decimal point
+      const cleaned = raw.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
+      setFormData((prev) => ({ ...prev, amount: cleaned }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const formatNumberWithCommas = (val: string) => {
+    if (!val) return "";
+    const parts = val.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
   };
 
   return (
@@ -262,11 +280,9 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               <Input
                 id="amount"
                 name="amount"
-                type="number"
-                value={formData.amount}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, amount: e.target.value }))
-                }
+                type="text"
+                value={formatNumberWithCommas(formData.amount)}
+                onChange={(e) => handleInputChange("amount", e.target.value)}
                 required
               />
             </div>
@@ -382,6 +398,17 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                 <option value="BANK">BANK</option>
                 <option value="DEBT">DEBT</option>
               </select>
+            </div>
+            <div className="flex items-center mt-2">
+              <input
+                id="asset"
+                name="asset"
+                type="checkbox"
+                checked={formData.asset}
+                onChange={e => setFormData(prev => ({ ...prev, asset: e.target.checked }))}
+                className="mr-2"
+              />
+              <Label htmlFor="asset">Asset</Label>
             </div>
           {/* Add date field for CEO only */}
           {userRole === 'ceo' && (

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaidEntry } from "../_api/apiService";
 import SearchablePaginatedDropdown from "../../../shop/sold/Sold Components/SearchablePaginatedDropdown";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 interface EditPaidModalProps {
   isOpen: boolean;
@@ -63,9 +64,10 @@ const EditPaidModal: React.FC<EditPaidModalProps> = ({
   const editPaidEntryMutation = useMutation({
     mutationFn: async (updatedEntry: { id: number; amount: string; salary?: number | null; contract?: number | null; date?: string }) => {
       const accessToken = localStorage.getItem("accessToken");
+      const payload = { ...updatedEntry, amount: (updatedEntry.amount || '').replace(/,/g, '') };
       const response = await axios.put(
         `https://backend.kidsdesigncompany.com/api/paid/${updatedEntry.id}/`,
-        updatedEntry,
+        payload,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -154,11 +156,10 @@ const EditPaidModal: React.FC<EditPaidModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="amount" className="text-right">Amount</Label>
-              <Input
+              <FormattedNumberInput
                 id="amount"
-                type="number"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onValueChange={setAmount}
                 className="p-2 border rounded w-full"
                 required
               />

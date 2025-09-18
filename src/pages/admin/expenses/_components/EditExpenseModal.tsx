@@ -18,7 +18,7 @@ import CategoryDropdown from "./Category";
 
 interface ExpenseFormData {
   name: string;
-  amount: number | "";
+  amount: string; // changed to string for formatted input
   quantity?: string; // Make quantity optional
   description: string | undefined;
   selectedType: string;
@@ -27,6 +27,7 @@ interface ExpenseFormData {
   date?: string;
   product?: number | null; // Add product field
   payment_method?: string;
+  asset: boolean; // <-- Add asset field
 }
 
 interface Project {
@@ -68,6 +69,7 @@ interface Expense {
   }; // Add product field to Expense interface
   date?: string;
   payment_method?: string;
+  asset?: boolean; // <-- Add asset field to Expense interface
 }
 
 interface EditExpenseModalProps {
@@ -161,6 +163,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
     date: "",
     product: null,
     payment_method: "CASH",
+    asset: false, // <-- Default value
   });
 
   useEffect(() => {
@@ -185,7 +188,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
       setFormData({
         name: expense.name || "",
         description: expense.description || "",
-        amount: expense.amount || "",
+        amount: expense.amount !== undefined && expense.amount !== null ? String(expense.amount) : "",
         quantity: String(expense.quantity ?? "") || undefined, // Initialize as undefined if null or empty
         selectedType,
         selectedItem,
@@ -193,6 +196,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
         date: expense.date ? new Date(expense.date).toISOString().split('T')[0] : "", // Ensure YYYY-MM-DD format
         product: expense.product?.id || null, // Populate product field
         payment_method: expense.payment_method || "CASH",
+        asset: expense.asset ?? false, // <-- Populate asset field
       });
     }
   }, [expense]);
@@ -200,10 +204,11 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   const mutation = useMutation({
     mutationFn: async (data: ExpenseFormData) => {
       // Format the data according to the API expectations
+      const sanitizedAmount = (data.amount === "" ? "0" : String(data.amount)).replace(/,/g, "");
       const formattedData: any = {
         name: data.name,
         description: data.description || "",
-        amount: Number(data.amount) || 0,
+        amount: Number(sanitizedAmount) || 0,
         quantity: data.quantity || null, // Send null if quantity is empty
         category: data.category,
         project: data.selectedType === "project" && data.selectedItem ? Number(data.selectedItem) : null,
@@ -211,6 +216,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
         product: data.selectedType === "product" && data.selectedItem ? Number(data.selectedItem) : null, // Change to 'product'
         date: data.date || undefined,
         payment_method: data.payment_method || undefined,
+        asset: data.asset, // <-- Pass asset to backend
       };
 
       if (data.selectedType === "other") {
@@ -250,12 +256,28 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
     },
   });
 
+  const formatNumberWithCommas = (val: string) => {
+    if (!val) return "";
+    const parts = val.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "amount" || name === "quantity" ? (value === "" ? "" : Number(value)) : value,
-    }));
+    if (name === "amount") {
+      const raw = value.replace(/,/g, "");
+      const cleaned = raw.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
+      setFormData((prev) => ({
+        ...prev,
+        amount: cleaned === "" ? "" : cleaned,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: name === "quantity" ? (value === "" ? "" : value) : value,
+      }));
+    }
   };
 
   const handleInputChange = (name: string, value: string) => {
@@ -306,9 +328,9 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
                 <Input
                   id="amount"
                   name="amount"
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                  type="text"
+                  value={formatNumberWithCommas(formData.amount)}
+                  onChange={handleChange}
                 className="w-full"
                 
                 />
@@ -468,6 +490,20 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
                 selectedCategory={formData.category}
                 onCategoryChange={(categoryId) => setFormData((prev) => ({ ...prev, category: categoryId }))}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center mt-2">
+                <input
+                  id="asset"
+                  name="asset"
+                  type="checkbox"
+                  checked={formData.asset}
+                  onChange={e => setFormData(prev => ({ ...prev, asset: e.target.checked }))}
+                  className="mr-2"
+                />
+                <Label htmlFor="asset">Asset</Label>
+              </div>
             </div>
 
             <DialogFooter>

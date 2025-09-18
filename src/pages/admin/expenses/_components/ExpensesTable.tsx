@@ -67,6 +67,7 @@ interface Entry {
   quantity: string | null; // Quantity can be null
   payment_method?: string;
   date: string;
+  asset?: boolean; // <-- Add asset field
 }
 
 interface DailyData {
@@ -110,6 +111,7 @@ interface Expense {
   }; // Add product to Expense interface
   date?: string; // Add date to Expense interface
   payment_method?: string; // Add payment method to Expense interface
+  asset?: boolean; // <-- Add asset field
 }
 
 interface ExpensesTableProps {
@@ -295,6 +297,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({
         : undefined,
       date: entry.date, // Map date to expense.date
       payment_method: entry.payment_method || undefined, // Map payment method
+      asset: entry.asset ?? false, // <-- Map asset field
     };
   };
 
@@ -471,13 +474,14 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({
                         <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-bold text-blue-400 hidden lg:table-cell">Product</th> {/* Add Product column */}
                         <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-bold text-blue-400">Amount</th>
                         <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-bold text-blue-400 hidden sm:table-cell">Qty</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-bold text-blue-400">Asset</th>
                         <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-bold text-blue-400">Details</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {day.entries.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="text-center py-6 text-gray-500">
+                          <td colSpan={10} className="text-center py-6 text-gray-500">
                             No expenses for this day.
                           </td>
                         </tr>
@@ -493,6 +497,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({
                             <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden lg:table-cell">{entry.linked_product?.name || "N/A"}</td> {/* Display Product */}
                             <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium">₦ {formatNumber(entry.amount)}</td>
                             <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">{entry.quantity || "-"}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">{entry.asset ? "Yes" : "No"}</td>
                             <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                               <button
                                 onClick={() => handleRowClick(entry)}
@@ -554,6 +559,10 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-semibold text-black uppercase">Sold Item</span>
                 <span className="text-base font-bold text-black">{selectedEntry.sold_item?.name || "N/A"}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-black uppercase">Asset</span>
+                <span className="text-base font-bold text-black">{selectedEntry.asset ? "Yes" : "No"}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-semibold text-black uppercase">Date</span>

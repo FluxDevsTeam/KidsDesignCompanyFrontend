@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import SearchableCategoryDropdown from "./SearchableCategoryDropdown";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 interface IncomeEntry {
   id: number;
@@ -63,7 +64,7 @@ const EditIncomeModal: React.FC<EditIncomeModalProps> = ({ entry, isOpen, onOpen
       const token = localStorage.getItem("accessToken");
       const payload: any = {
         name: data.name,
-        amount: Number(data.amount),
+        amount: Number((data.amount || "").replace(/,/g, "")),
         cash: data.cash,
         date: data.date,
         category: data.category,
@@ -132,7 +133,7 @@ const EditIncomeModal: React.FC<EditIncomeModalProps> = ({ entry, isOpen, onOpen
             </div>
             <div className="space-y-2">
               <Label htmlFor="amount">Amount (₦)</Label>
-              <Input id="amount" name="amount" type="number" value={formData.amount} onChange={(e) => setFormData((p) => ({ ...p, amount: e.target.value }))} required />
+              <FormattedNumberInput id="amount" name="amount" value={formData.amount} onValueChange={(v) => setFormData((p) => ({ ...p, amount: v }))} required />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
