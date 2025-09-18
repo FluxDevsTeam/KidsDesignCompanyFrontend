@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import SearchablePaginatedDropdown from "../../sold/Sold Components/SearchablePaginatedDropdown";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const Modal = ({
   isOpen,
@@ -87,7 +88,7 @@ const AddNewStockPage = () => {
 
     try {
       const submitData = {
-        quantity: parseFloat(formData.quantity),
+        quantity: parseFloat((formData.quantity || "").replace(/,/g, "")),
         item: formData.item,
       };
 
@@ -142,12 +143,11 @@ const AddNewStockPage = () => {
           </div>
           <div>
             <label className="block mb-1 font-medium text-gray-700">Quantity</label>
-            <input
-              type="number"
+            <FormattedNumberInput
+              id="quantity"
               name="quantity"
               value={formData.quantity}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-200 focus:outline-none"
+              onValueChange={(v) => setFormData(prev => ({ ...prev, quantity: v }))}
               required
             />
           </div>

@@ -11,19 +11,21 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 interface AddAssetModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const initialFormData: AssetData & { date_added?: string; note?: string } = {
+const initialFormData: (AssetData & { date_added?: string; note?: string }) & { value_str?: string } = {
   name: "",
   value: 0,
   expected_lifespan: "",
   is_still_available: true,
   date_added: new Date().toISOString().split('T')[0],
   note: "",
+  value_str: "",
 };
 
 const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose }) => {
@@ -31,7 +33,7 @@ const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose }) => {
   const { mutate, isPending } = useCreateAsset();
   const { userRole } = useAuth();
 
-  const [formData, setFormData] = useState<AssetData & { date_added?: string; note?: string }>(initialFormData);
+  const [formData, setFormData] = useState<(AssetData & { date_added?: string; note?: string }) & { value_str?: string }>(initialFormData);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -56,7 +58,16 @@ const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutate(formData, {
+    const numericValue = Number((formData.value_str ?? String(formData.value ?? "")).replace(/,/g, ""));
+    const payload: AssetData & { date_added?: string; note?: string } = {
+      name: formData.name,
+      value: isNaN(numericValue) ? 0 : numericValue,
+      expected_lifespan: formData.expected_lifespan,
+      is_still_available: formData.is_still_available,
+      date_added: formData.date_added,
+      note: formData.note,
+    };
+    mutate(payload, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["assets"] });
         toast.success("Asset added successfully!");
@@ -88,13 +99,12 @@ const AddAssetModal: React.FC<AddAssetModalProps> = ({ isOpen, onClose }) => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="value">Value</Label>
-              <Input 
-                id="value" 
-                name="value" 
-                type="number" 
-                value={formData.value || ""} 
-                onChange={handleChange} 
-                required 
+              <FormattedNumberInput
+                id="value"
+                name="value"
+                value={formData.value_str ?? ""}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, value_str: v }))}
+                required
               />
             </div>
             <div className="space-y-2">

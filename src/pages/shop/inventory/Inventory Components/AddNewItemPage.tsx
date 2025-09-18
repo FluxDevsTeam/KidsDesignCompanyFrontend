@@ -7,6 +7,7 @@ import "rsuite/dist/rsuite.min.css";
 import { ThreeDots } from "react-loader-spinner";
 import Modal from "../../Modal";
 import { deleteCategory } from "./categoryOperations";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const AddItemPage: React.FC = () => {
   const navigate = useNavigate();
@@ -71,11 +72,11 @@ const AddItemPage: React.FC = () => {
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
       formDataToSend.append("category", formData.category);
-      formDataToSend.append("stock", formData.stock);
+      formDataToSend.append("stock", (formData.stock || '').replace(/,/g, ''));
       formDataToSend.append("description", formData.description);
       formDataToSend.append("dimensions", formData.dimensions);
-      formDataToSend.append("cost_price", formData.cost_price);
-      formDataToSend.append("selling_price", formData.selling_price);
+      formDataToSend.append("cost_price", (formData.cost_price || '').replace(/,/g, ''));
+      formDataToSend.append("selling_price", (formData.selling_price || '').replace(/,/g, ''));
 
       if (formData.image) {
         formDataToSend.append("image", formData.image);
@@ -268,14 +269,11 @@ const AddItemPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Stock
               </label>
-              <input
-                type="number"
+              <FormattedNumberInput
                 required
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                 value={formData.stock}
-                onChange={(e) =>
-                  setFormData({ ...formData, stock: e.target.value })
-                }
+                onValueChange={(v) => setFormData({ ...formData, stock: v })}
               />
             </div>
 
@@ -300,14 +298,11 @@ const AddItemPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Cost Price
               </label>
-              <input
-                type="number"
+              <FormattedNumberInput
                 required
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                 value={formData.cost_price}
-                onChange={(e) =>
-                  setFormData({ ...formData, cost_price: e.target.value })
-                }
+                onValueChange={(v) => setFormData({ ...formData, cost_price: v })}
               />
             </div>
 
@@ -316,14 +311,11 @@ const AddItemPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Selling Price
               </label>
-              <input
-                type="number"
+              <FormattedNumberInput
                 required
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                 value={formData.selling_price}
-                onChange={(e) =>
-                  setFormData({ ...formData, selling_price: e.target.value })
-                }
+                onValueChange={(v) => setFormData({ ...formData, selling_price: v })}
               />
             </div>
           </div>

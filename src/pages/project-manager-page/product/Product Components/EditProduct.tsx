@@ -7,6 +7,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import Modal from "@/pages/shop/Modal";
 import SearchablePaginatedProjectDropdown from '../SearchablePaginatedProjectDropdown';
 import { formatNaira } from '@/lib/utils';
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const EditProduct: React.FC = () => {
   const { user } = useAuth();
@@ -182,9 +183,9 @@ const EditProduct: React.FC = () => {
       formDataToSubmit.append("design", formData.design);
       formDataToSubmit.append("production_note", formData.production_note);
       formDataToSubmit.append("progress", formData.progress.toString());
-      formDataToSubmit.append("selling_price", formData.selling_price);
-      formDataToSubmit.append("overhead_cost", formData.overhead_cost);
-      formDataToSubmit.append("quantity", formData.quantity);
+      formDataToSubmit.append("selling_price", (formData.selling_price || '').replace(/,/g, ''));
+      formDataToSubmit.append("overhead_cost", (formData.overhead_cost || '').replace(/,/g, ''));
+      formDataToSubmit.append("quantity", (formData.quantity || '').replace(/,/g, ''));
       if (formData.image) {
         formDataToSubmit.append("images", formData.image);
       }
@@ -331,11 +332,10 @@ const EditProduct: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Quantity
               </label>
-              <input
-                type="number"
+              <FormattedNumberInput
                 name="quantity"
                 value={formData.quantity}
-                onChange={handleInputChange}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, quantity: v }))}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                 required
                 min="1"
@@ -403,11 +403,10 @@ const EditProduct: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Selling Price
               </label>
-              <input
-                type="number"
+              <FormattedNumberInput
                 name="selling_price"
                 value={formData.selling_price}
-                onChange={handleInputChange}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, selling_price: v }))}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                 required
               />
@@ -416,11 +415,10 @@ const EditProduct: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Overhead Cost {fetchedOverheadCost && `(${formatNaira(fetchedOverheadCost)})`}
               </label>
-              <input
-                type="number"
+              <FormattedNumberInput
                 name="overhead_cost"
                 value={formData.overhead_cost}
-                onChange={handleInputChange}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, overhead_cost: v }))}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                 required
               />

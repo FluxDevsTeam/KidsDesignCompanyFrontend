@@ -18,6 +18,7 @@ import {
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 // Create an axios instance with JWT token interceptor
 const api = axios.create({
@@ -123,7 +124,7 @@ const EditAssetModal = ({ asset, isOpen, onClose }: EditAssetModalProps) => {
     // Prepare data for submission
     const assetData = {
       name: formData.name,
-      value: parseFloat(formData.value),
+      value: Number((formData.value || "").replace(/,/g, "")),
       expected_lifespan: formData.expected_lifespan,
       is_still_available: formData.is_still_available,
       date_added: formData.date_added,
@@ -186,15 +187,11 @@ const EditAssetModal = ({ asset, isOpen, onClose }: EditAssetModalProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="value">Asset Value (NGN)</Label>
-                <Input
+                <FormattedNumberInput
                   id="value"
                   name="value"
-                  type="number"
-                  step="0.01"
-                  min="0"
                   value={formData.value}
-                  onChange={handleChange}
-                  placeholder="Enter asset value"
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, value: v }))}
                   required
                 />
               </div>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import SearchablePaginatedDropdown from "./SearchablePaginatedDropdown";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const Modal = ({
   isOpen,
@@ -139,6 +140,9 @@ const AddNewSoldItemPage = () => {
         if (saleType === "customer" && key === "project") {
           return [key, null];
         }
+        if (key === 'quantity' || key === 'logistics') {
+          return [key, value ? value.replace(/,/g, '') : null];
+        }
         return [key, value || null];
       })
     );
@@ -228,14 +232,12 @@ const AddNewSoldItemPage = () => {
         )}
         <div>
           <label className="block mb-1">Quantity:</label>
-          <input
-            type="number"
+          <FormattedNumberInput
+            id="quantity"
             name="quantity"
             value={formData.quantity}
-            min={1}
-            max={itemDetails ? itemDetails.quantity : undefined}
-            onChange={e => {
-              let val = e.target.value;
+            onValueChange={(v) => {
+              let val = v;
               if (itemDetails && Number(val) > itemDetails.quantity) {
                 val = itemDetails.quantity.toString();
               }
@@ -272,11 +274,11 @@ const AddNewSoldItemPage = () => {
 
             <div>
               <label className="block mb-1">Logistics:</label>
-              <input
-                type="number"
+              <FormattedNumberInput
+                id="logistics"
                 name="logistics"
                 value={formData.logistics}
-                onChange={handleChange}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, logistics: v }))}
                 className="w-full border rounded p-2"
               />
             </div>

@@ -6,6 +6,7 @@ import { ThreeDots } from "react-loader-spinner";
 import Modal from "@/pages/shop/Modal";
 import SearchablePaginatedDropdown from "./SearchablePaginatedDropdown";
 import { deleteRawMaterialCategory } from "./rawMaterialCategoryOperations";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const EditRawMaterial = () => {
   const { id } = useParams();
@@ -104,7 +105,11 @@ const EditRawMaterial = () => {
     const formDataToSend = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       if (value !== null && key !== 'quantity') {
-        formDataToSend.append(key, value);
+        if (key === 'price') {
+          formDataToSend.append(key, (value as string).replace(/,/g, ''));
+        } else {
+          formDataToSend.append(key, value as any);
+        }
       }
     });
 
@@ -213,7 +218,7 @@ const EditRawMaterial = () => {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-black uppercase mb-1">Price</label>
-          <input type="number" name="price" value={formData.price} onChange={handleChange} className="border p-2 rounded w-full text-base font-bold text-black" required />
+          <FormattedNumberInput name="price" value={formData.price} onValueChange={(v) => setFormData(prev => ({ ...prev, price: v }))} className="border p-2 rounded w-full text-base font-bold text-black" required />
           </div>
         </div>
         <div className="flex flex-col gap-1">

@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { ThreeDots } from "react-loader-spinner";
 import Modal from "../../Modal";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 
 const EditStockItemPage: React.FC = () => {
@@ -74,7 +75,7 @@ const EditStockItemPage: React.FC = () => {
 
     try {
       const requestBody = {
-        quantity: parseFloat(formData.quantity),
+        quantity: parseFloat((formData.quantity || "").replace(/,/g, "")),
         date: formData.date,
       };
 
@@ -147,21 +148,18 @@ const EditStockItemPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Quantity</label>
-            <input
-              type="number"
-              required
+            <FormattedNumberInput
+              id="quantity"
+              name="quantity"
               value={formData.quantity}
-              min={1}
-              max={itemDetails ? itemDetails.quantity + originalQuantity : undefined}
-              onChange={(e) => {
-                let val = e.target.value;
+              onValueChange={(v) => {
+                let val = v;
                 if (itemDetails && Number(val) > itemDetails.quantity + originalQuantity) {
-                  val = (itemDetails.quantity + originalQuantity).toString();
+                  val = String(itemDetails.quantity + originalQuantity);
                 }
                 setFormData({ ...formData, quantity: val });
               }}
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-              disabled={!itemDetails}
+              required
             />
             {itemDetails && (
               <div className="text-xs text-black mt-1">Max: {(itemDetails.quantity + originalQuantity).toLocaleString()}</div>

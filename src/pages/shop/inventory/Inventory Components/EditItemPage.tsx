@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../../Modal";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const EditItemPage: React.FC = () => {
   const userRole = localStorage.getItem("user_role");
@@ -147,8 +148,8 @@ const EditItemPage: React.FC = () => {
       // Send all form data values
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== "image" && value !== "" && value !== null) {
-          // Skip empty values, null values and image
-          formDataToSend.append(key, value.toString());
+          const val = (key === 'cost_price' || key === 'selling_price') && typeof value === 'string' ? value.replace(/,/g, '') : value.toString();
+          formDataToSend.append(key, val);
         }
       });
 
@@ -321,12 +322,9 @@ const EditItemPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">
               Cost Price
             </label>
-            <input
-              type="number"
+            <FormattedNumberInput
               value={formData.cost_price}
-              onChange={(e) =>
-                setFormData({ ...formData, cost_price: e.target.value })
-              }
+              onValueChange={(v) => setFormData({ ...formData, cost_price: v })}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
             />
           </div>
@@ -335,12 +333,9 @@ const EditItemPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">
               Selling Price
             </label>
-            <input
-              type="number"
+            <FormattedNumberInput
               value={formData.selling_price}
-              onChange={(e) =>
-                setFormData({ ...formData, selling_price: e.target.value })
-              }
+              onValueChange={(v) => setFormData({ ...formData, selling_price: v })}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
             />
           </div>

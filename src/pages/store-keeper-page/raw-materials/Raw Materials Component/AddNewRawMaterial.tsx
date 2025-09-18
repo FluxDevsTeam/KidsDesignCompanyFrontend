@@ -5,6 +5,7 @@ import { faArrowLeft, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
 import Modal from "../../../shop/Modal";
 import SearchablePaginatedDropdown from "./SearchablePaginatedDropdown";
 import { deleteRawMaterialCategory } from "./rawMaterialCategoryOperations";
+import FormattedNumberInput from "@/components/ui/formatted-number-input";
 
 const AddNewRawMaterial = () => {
   const navigate = useNavigate();
@@ -65,7 +66,11 @@ const AddNewRawMaterial = () => {
     const formDataToSend = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       if (value !== null) {
-        formDataToSend.append(key, value);
+        if (key === 'quantity' || key === 'price') {
+          formDataToSend.append(key, (value as string).replace(/,/g, ''));
+        } else {
+          formDataToSend.append(key, value as any);
+        }
       }
     });
 
@@ -162,7 +167,7 @@ const AddNewRawMaterial = () => {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-black uppercase mb-1">Quantity</label>
-            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} className="border p-2 rounded w-full text-base font-bold text-black" required />
+            <FormattedNumberInput name="quantity" value={formData.quantity} onValueChange={(v) => setFormData(prev => ({ ...prev, quantity: v }))} className="border p-2 rounded w-full text-base font-bold text-black" required />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-black uppercase mb-1">Unit</label>
@@ -171,7 +176,7 @@ const AddNewRawMaterial = () => {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-black uppercase mb-1">Price</label>
-          <input type="number" name="price" value={formData.price} onChange={handleChange} className="border p-2 rounded w-full text-base font-bold text-black" required />
+          <FormattedNumberInput name="price" value={formData.price} onValueChange={(v) => setFormData(prev => ({ ...prev, price: v }))} className="border p-2 rounded w-full text-base font-bold text-black" required />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-black uppercase mb-1">Description</label>
