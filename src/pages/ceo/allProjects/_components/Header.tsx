@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Frame180 from "../../../../assets/images/Frame180.png";
 
 interface ProjectsSummary {
+  overdue_projects_count: any;
   all_time_projects_count: number;
   all_projects_count: number;
   completed_projects_count: number;
@@ -42,7 +43,7 @@ const Header = () => {
   const summaryItems = [
     { label: "All Time Projects", value: data.all_time_projects_count },
     { label: "All Active Projects", value: data.all_projects_count },
-    { label: "Completed Projects", value: data.completed_projects_count },
+    { label: "Overdue Projects", value: data.overdue_projects_count },
     { label: "Average Progress", value: `${data.average_progress}%` },
   ];
 

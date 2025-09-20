@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import axios from "axios";
 import { FiMinus } from "react-icons/fi";
-import { useAuth } from "@/pages/AuthPages/AuthContext";
+import dayjs from "dayjs";
 
 interface ProductTaskManagerProps {
   product: any;
@@ -11,7 +11,6 @@ interface ProductTaskManagerProps {
 }
 
 const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpdate, scrollToLastTaskTrigger, onProductUpdate }) => {
-  const { user } = useAuth();
   const [userRole, setUserRole] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -19,10 +18,8 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
     setUserRole(role);
   }, []);
   const [tasks, setTasks] = React.useState<any[]>([]);
-  const [isSaving, setIsSaving] = React.useState(false);
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'saved'>('idle');
   const saveTimeout = React.useRef<NodeJS.Timeout | null>(null);
-  const [dirty, setDirty] = React.useState(false);
   const initialLoad = React.useRef(true);
   const [pendingSave, setPendingSave] = React.useState(false);
   const [userTyped, setUserTyped] = React.useState(false);
@@ -50,7 +47,6 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
     }
     setTasks(Array.isArray(loadedTasks) ? loadedTasks : []);
     initialLoad.current = true;
-    setDirty(false);
     setSaveStatus('idle');
     setPendingSave(false);
   }, [product.tasks]);
@@ -62,13 +58,11 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
       return;
     }
     if (!userTyped) return;
-    setDirty(true);
     setPendingSave(true);
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
       setPendingSave(false);
       setSaveStatus('saving');
-      setIsSaving(true);
       saveTasks();
       setTimeout(() => setSaveStatus('idle'), 900);
     }, 1000);
@@ -119,12 +113,9 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
         onProductUpdate(response.data);
       }
       setTimeout(() => setSaveStatus('idle'), 800);
-      setDirty(false);
     } catch (err) {
       setSaveStatus('idle');
       alert("Failed to auto-save tasks");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -132,11 +123,11 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
   const handleAddTask = () => {
     // Only add a new task if there is no empty task at the end
     if (tasks.length > 0 && tasks[tasks.length - 1].title.trim() === "") return;
-    setTasks((prev) => [...prev, { title: "", checked: false, subtasks: [] }]);
+    setTasks((prev) => [...prev, { title: "", checked: false, deadline: "", subtasks: [] }]);
     setUserTyped(false);
   };
   // Edit Task
-  const handleTaskChange = (idx: number, field: "title" | "checked", value: any) => {
+  const handleTaskChange = (idx: number, field: "title" | "checked" | "deadline", value: any) => {
     setUserTyped(true);
     setTasks((prev) => {
       const updated = prev.map((task, i) => {
@@ -163,12 +154,12 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
   // Add Subtask
   const handleAddSubtask = (taskIdx: number) => {
     setTasks((prev) => prev.map((task, i) =>
-      i === taskIdx ? { ...task, subtasks: [...(task.subtasks || []), { title: "", checked: false }] } : task
+      i === taskIdx ? { ...task, subtasks: [...(task.subtasks || []), { title: "", checked: false, deadline: "" }] } : task
     ));
     setUserTyped(false);
   };
   // Edit Subtask
-  const handleSubtaskChange = (taskIdx: number, subIdx: number, field: "title" | "checked", value: any) => {
+  const handleSubtaskChange = (taskIdx: number, subIdx: number, field: "title" | "checked" | "deadline", value: any) => {
     setUserTyped(true);
     setTasks((prev) => {
       const updated = prev.map((task, i) => {
@@ -200,6 +191,27 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
 
   // Calculate progress percentage
   const progress = calculateProgress(tasks);
+
+  // Calculate days remaining for task deadline
+  const getDaysRemaining = (deadline: string, isChecked: boolean = false) => {
+    if (!deadline || isChecked) return null;
+    const today = dayjs().startOf('day');
+    const deadlineDate = dayjs(deadline).startOf('day');
+    return deadlineDate.diff(today, 'day');
+  };
+
+  // Get deadline display info
+  const getDeadlineInfo = (deadline: string, isChecked: boolean = false) => {
+    if (!deadline || isChecked) return null;
+    const days = getDaysRemaining(deadline, isChecked);
+    if (days === null) return null;
+    
+    const dayText = Math.abs(days) === 1 ? 'day' : 'days';
+    const color = days < 0 ? 'text-red-500' : days <= 3 ? 'text-yellow-500' : 'text-black';
+    const text = days < 0 ? `${days} ${dayText} overdue` : `${days} ${dayText} left`;
+    
+    return { text, color, days };
+  };
 
   return (
     <div className="max-w-2xl  min-h-[500px] md:min-h-[700px] lg:min-h-[550px]  mx-auto">
@@ -248,13 +260,30 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
                 className="accent-blue-400 w-4 h-4 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-400 transition-all"
                 readOnly={userRole === "storekeeper"}
               />
-              <input
-                className="font-semibold text-base md:text-lg border-b-2 border-transparent focus:border-blue-400 outline-none bg-transparent flex-1 px-2 py-1 text-black-200 placeholder-black-200 transition-all"
-                value={task.title}
-                placeholder="Task title"
-                onChange={e => handleTaskChange(idx, "title", e.target.value)}
-                readOnly={userRole === "storekeeper"}
-              />
+              <div className="flex-1 flex flex-col gap-1">
+                <input
+                  className="font-semibold text-base md:text-lg border-b-2 border-transparent focus:border-blue-400 outline-none bg-transparent px-2 py-1 text-black-200 placeholder-black-200 transition-all"
+                  value={task.title}
+                  placeholder="Task title"
+                  onChange={e => handleTaskChange(idx, "title", e.target.value)}
+                  readOnly={userRole === "storekeeper"}
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    className="text-xs border border-gray-300 rounded px-2 py-1 focus:border-blue-400 outline-none"
+                    value={task.deadline || ""}
+                    onChange={e => handleTaskChange(idx, "deadline", e.target.value)}
+                    placeholder="Set deadline"
+                    readOnly={userRole === "storekeeper"}
+                  />
+                  {task.deadline && !task.checked && (
+                    <span className={`text-xs ${getDeadlineInfo(task.deadline, task.checked)?.color}`}>
+                      {getDeadlineInfo(task.deadline, task.checked)?.text}
+                    </span>
+                  )}
+                </div>
+              </div>
               {userRole !== "storekeeper" && (
                 <button
                   className="md:ml-2 p-1 border-2 border-400 text-red-400 hover:bg-red-400 hover:text-white rounded-full flex items-center justify-center opacity-70 group-hover:opacity-100 transition-all"
@@ -288,13 +317,30 @@ const ProductTaskManager: React.FC<ProductTaskManagerProps> = ({ product, onUpda
                       className="accent-blue-400 w-3 h-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-400 transition-all"
                       readOnly={userRole === "storekeeper"}
                     />
-                    <input
-                      className="text-sm md:text-base border-b border-transparent focus:border-blue-400 outline-none bg-transparent flex-1 px-2 py-1 text-black-200 placeholder-black-200 transition-all"
-                      value={sub.title}
-                      placeholder="Subtask title"
-                      onChange={e => handleSubtaskChange(idx, subIdx, "title", e.target.value)}
-                      readOnly={userRole === "storekeeper"}
-                    />
+                    <div className="flex-1 flex flex-col gap-1">
+                      <input
+                        className="text-sm md:text-base border-b border-transparent focus:border-blue-400 outline-none bg-transparent px-2 py-1 text-black-200 placeholder-black-200 transition-all"
+                        value={sub.title}
+                        placeholder="Subtask title"
+                        onChange={e => handleSubtaskChange(idx, subIdx, "title", e.target.value)}
+                        readOnly={userRole === "storekeeper"}
+                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="date"
+                          className="text-xs border border-gray-300 rounded px-2 py-1 focus:border-blue-400 outline-none"
+                          value={sub.deadline || ""}
+                          onChange={e => handleSubtaskChange(idx, subIdx, "deadline", e.target.value)}
+                          placeholder="Set deadline"
+                          readOnly={userRole === "storekeeper"}
+                        />
+                        {sub.deadline && !sub.checked && (
+                          <span className={`text-xs ${getDeadlineInfo(sub.deadline, sub.checked)?.color}`}>
+                            {getDeadlineInfo(sub.deadline, sub.checked)?.text}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     {userRole !== "storekeeper" && (
                       <button
                         className="md:ml-2 ml-1 p-1 border-2 border-red-400 text-red-400 hover:bg-red-400 hover:text-white rounded-full flex items-center justify-center opacity-70 group-hover/sub:opacity-100 transition-all"

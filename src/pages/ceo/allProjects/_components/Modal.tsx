@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,7 +70,8 @@ interface Calculations {
 interface Task {
   title: string;
   checked: boolean;
-  subtasks?: { title: string; checked: boolean }[];
+  deadline?: string;
+  subtasks?: { title: string; checked: boolean; deadline?: string }[];
 }
 
 interface Project {
@@ -272,10 +272,10 @@ const ProjectModals: React.FC<ProjectModalsProps> = ({
     return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  // Calculate total for All Items
-  const allItemsTotal = Array.isArray(selectedProject.all_items)
-    ? selectedProject.all_items.reduce((acc, item) => acc + (parseFloat(item.price || '0') * (parseInt(item.quantity || '1', 10) || 1)), 0)
-    : 0;
+  // Calculate total for All Items (commented out as not used in current UI)
+  // const allItemsTotal = Array.isArray(selectedProject.all_items)
+  //   ? selectedProject.all_items.reduce((acc, item) => acc + (parseFloat(item.price || '0') * (parseInt(item.quantity || '1', 10) || 1)), 0)
+  //   : 0;
 
   // --- Time Remaining and Timeframe logic to match ProjectsTable.tsx ---
   const getTimeRemainingInfo = (project: any) => {
@@ -361,6 +361,27 @@ const ProjectModals: React.FC<ProjectModalsProps> = ({
     return Math.round((total / tasks.length) * 100);
   };
   const progress = calculateProgress(localTasks);
+
+  // Calculate days remaining for task deadline
+  const getDaysRemaining = (deadline: string, isChecked: boolean = false) => {
+    if (!deadline || isChecked) return null;
+    const today = dayjs().startOf('day');
+    const deadlineDate = dayjs(deadline).startOf('day');
+    return deadlineDate.diff(today, 'day');
+  };
+
+  // Get deadline display info
+  const getDeadlineInfo = (deadline: string, isChecked: boolean = false) => {
+    if (!deadline || isChecked) return null;
+    const days = getDaysRemaining(deadline, isChecked);
+    if (days === null) return null;
+    
+    const dayText = Math.abs(days) === 1 ? 'day' : 'days';
+    const color = days < 0 ? 'text-red-500' : days <= 3 ? 'text-yellow-500' : 'text-black';
+    const text = days < 0 ? `${days} ${dayText} overdue` : `${days} ${dayText} left`;
+    
+    return { text, color, days };
+  };
 
   // Shorter display names for financials
   const financialsDisplayNames: Record<string, string> = {
@@ -512,7 +533,7 @@ const ProjectModals: React.FC<ProjectModalsProps> = ({
                   {/* Total Card */}
                   <div className="bg-white p-2 sm:p-3 rounded-lg shadow-sm border border-gray-200">
                     <span className="text-xs text-blue-600 font-medium">Total</span>
-                    <p className="text-[11px] sm:text-sm text-black mt-1">₦{formatNumber(parseFloat(selectedProject.total || '0'))}</p>
+                    <p className="text-[11px] sm:text-sm text-black mt-1">₦{formatNumber(parseFloat(selectedProject.selling_price || '0') + parseFloat(selectedProject.logistics || '0') + parseFloat(selectedProject.service_charge || '0'))}</p>
                 </div>
                 
                   {/* Archived Card */}
@@ -792,6 +813,7 @@ const ProjectModals: React.FC<ProjectModalsProps> = ({
                       <thead className="bg-blue-400 text-white">
                         <tr>
                           <th className="p-2 text-left">Task</th>
+                          <th className="p-2 text-left">Days Remaining</th>
                           <th className="p-2 text-left">Completed</th>
                         </tr>
                       </thead>
@@ -801,7 +823,27 @@ const ProjectModals: React.FC<ProjectModalsProps> = ({
                             task ? (
                               <React.Fragment key={idx}>
                                 <tr className="border-b border-gray-200">
-                                  <td className="p-2 text-left font-medium">{task?.title}</td>
+                                  <td className="p-2 text-left">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{task?.title}</span>
+                                      {task.deadline && (
+                                        <div className="text-xs mt-1">
+                                          <span className={getDeadlineInfo(task.deadline, task.checked)?.color}>
+                                            {dayjs(task.deadline).format('MMM D, YYYY')}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="p-2 text-left">
+                                    {task.deadline && !task.checked ? (
+                                      <span className={`text-sm font-medium ${getDeadlineInfo(task.deadline, task.checked)?.color}`}>
+                                        {getDeadlineInfo(task.deadline, task.checked)?.text}
+                                      </span>
+                                    ) : (
+                                      <span className="text-gray-400 text-sm">{task.checked ? "Completed" : "No deadline"}</span>
+                                    )}
+                                  </td>
                                   <td className="p-2 text-left">
                                     <input type="checkbox" checked={task?.checked} onChange={() => task && handleTaskCompletionToggle(idx)} />
                             </td>
@@ -809,10 +851,30 @@ const ProjectModals: React.FC<ProjectModalsProps> = ({
                                 {Array.isArray(task.subtasks) ? task.subtasks.map((sub, subIdx) => (
                                   sub ? (
                                     <tr key={subIdx} className="border-b border-gray-100">
-                                      <td className="p-2 pl-8 text-left text-gray-700 flex items-center gap-2">
-                                        <span className="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
-                                        <span>{sub.title}</span>
+                                      <td className="p-2 pl-8 text-left text-gray-700">
+                                        <div className="flex items-center gap-2">
+                                          <span className="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
+                                          <div className="flex flex-col">
+                                            <span>{sub.title}</span>
+                                            {sub.deadline && (
+                                              <div className="text-xs mt-1">
+                                                <span className={getDeadlineInfo(sub.deadline, sub.checked)?.color}>
+                                                  {dayjs(sub.deadline).format('MMM D, YYYY')}
+                                                </span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
                             </td>
+                                      <td className="p-2 text-left">
+                                        {sub.deadline && !sub.checked ? (
+                                          <span className={`text-sm font-medium ${getDeadlineInfo(sub.deadline, sub.checked)?.color}`}>
+                                            {getDeadlineInfo(sub.deadline, sub.checked)?.text}
+                                          </span>
+                                        ) : (
+                                          <span className="text-gray-400 text-sm">{sub.checked ? "Completed" : "No deadline"}</span>
+                                        )}
+                                      </td>
                                       <td className="p-2 text-left">
                                         <input type="checkbox" checked={sub.checked} onChange={() => sub && handleTaskCompletionToggle(idx, subIdx)} />
                             </td>
@@ -824,7 +886,7 @@ const ProjectModals: React.FC<ProjectModalsProps> = ({
                           ))
                         ) : (
                           <tr>
-                            <td className="p-2 text-left" colSpan={2}>No tasks found</td>
+                            <td className="p-2 text-left" colSpan={3}>No tasks found</td>
                           </tr>
                         )}
                       </tbody>

@@ -23,6 +23,7 @@ import Modal from "@/pages/shop/Modal";
 import SearchablePaginatedProjectDropdown from "./SearchablePaginatedProjectDropdown";
 import DashboardCard from "../../factory-manager-page/dashboard/DashboardCard";
 import ProductTaskManager from "./Product Components/ProductTaskManager";
+import dayjs from "dayjs";
 
 interface TableData {
   id: number;
@@ -41,6 +42,26 @@ const ProductsTable: React.FC = () => {
   const { user } = useAuth();
   // USER ROLE
   const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Utility functions for deadline calculations
+  const getDaysRemaining = (deadline: string, isChecked: boolean = false) => {
+    if (!deadline || isChecked) return null;
+    const today = dayjs().startOf('day');
+    const deadlineDate = dayjs(deadline).startOf('day');
+    return deadlineDate.diff(today, 'day');
+  };
+
+  const getDeadlineInfo = (deadline: string, isChecked: boolean = false) => {
+    if (!deadline || isChecked) return null;
+    const days = getDaysRemaining(deadline, isChecked);
+    if (days === null) return null;
+
+    const dayText = Math.abs(days) === 1 ? 'day' : 'days';
+    const color = days < 0 ? 'text-red-500' : days <= 3 ? 'text-yellow-500' : 'text-black';
+    const text = days < 0 ? `${days} ${dayText} overdue` : `${days} ${dayText} left`;
+
+    return { text, color, days };
+  };
 
   const headers = userRole === "storekeeper" ? [
     "Product",
@@ -1625,6 +1646,7 @@ const ProductsTable: React.FC = () => {
                           <thead className="bg-blue-400 text-white">
                             <tr>
                               <th className="p-2 text-left">Task</th>
+                              <th className="p-2 text-left">Days Remaining</th>
                               <th className="p-2 text-left">Completed</th>
                             </tr>
                           </thead>
@@ -1634,14 +1656,54 @@ const ProductsTable: React.FC = () => {
                                 task ? (
                                   <React.Fragment key={task.id || task.title || idx}>
                                     <tr className="border-b border-gray-200">
-                                      <td className="p-2 text-left font-medium">{task?.title}</td>
+                                      <td className="p-2 text-left">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">{task?.title}</span>
+                                          {task.deadline && (
+                                            <div className="text-xs mt-1">
+                                              <span className={getDeadlineInfo(task.deadline, task.checked)?.color}>
+                                                {dayjs(task.deadline).format('MMM D, YYYY')}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </td>
+                                      <td className="p-2 text-left">
+                                        {task.deadline && !task.checked ? (
+                                          <span className={`text-sm font-medium ${getDeadlineInfo(task.deadline, task.checked)?.color}`}>
+                                            {getDeadlineInfo(task.deadline, task.checked)?.text}
+                                          </span>
+                                        ) : (
+                                          <span className="text-gray-400 text-sm">{task.checked ? "Completed" : "No deadline"}</span>
+                                        )}
+                                      </td>
                                       <td className="p-2 text-left">
                                         <input type="checkbox" checked={task?.checked} readOnly={userRole === "storekeeper"} onChange={e => { if (userRole !== "storekeeper") { e.stopPropagation(); handleTaskCompletionToggle(idx); } }} />
                                       </td>
                                     </tr>
                                     {Array.isArray(task.subtasks) && task.subtasks.length > 0 && task.subtasks.map((sub: any, subIdx: number) => (
                                       <tr key={sub.id || sub.title || `${idx}-${subIdx}`} className="border-b border-gray-100">
-                                        <td className="p-2 pl-8 text-left text-blue-400">• {sub.title}</td>
+                                        <td className="p-2 pl-8 text-left text-blue-400">
+                                          <div className="flex flex-col">
+                                            <span>• {sub.title}</span>
+                                            {sub.deadline && (
+                                              <div className="text-xs mt-1">
+                                                <span className={getDeadlineInfo(sub.deadline, sub.checked)?.color}>
+                                                  {dayjs(sub.deadline).format('MMM D, YYYY')}
+                                                </span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </td>
+                                        <td className="p-2 text-left">
+                                          {sub.deadline && !sub.checked ? (
+                                            <span className={`text-sm font-medium ${getDeadlineInfo(sub.deadline, sub.checked)?.color}`}>
+                                              {getDeadlineInfo(sub.deadline, sub.checked)?.text}
+                                            </span>
+                                          ) : (
+                                            <span className="text-gray-400 text-sm">{sub.checked ? "Completed" : "No deadline"}</span>
+                                          )}
+                                        </td>
                                         <td className="p-2 text-left">
                                           <input type="checkbox" checked={sub.checked} readOnly={userRole === "storekeeper"} onChange={e => { if (userRole !== "storekeeper") { e.stopPropagation(); handleTaskCompletionToggle(idx, subIdx); } }} />
                                         </td>
@@ -1652,7 +1714,7 @@ const ProductsTable: React.FC = () => {
                               ))
                             ) : (
                               <tr>
-                                <td className="p-2 text-left" colSpan={2}>No tasks found</td>
+                                <td className="p-2 text-left" colSpan={3}>No tasks found</td>
                               </tr>
                             )}
                           </tbody>
